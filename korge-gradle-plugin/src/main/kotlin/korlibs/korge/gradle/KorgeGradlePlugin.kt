@@ -9,7 +9,6 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import korlibs.downloadFile
 import korlibs.invoke
-import korlibs.korge.gradle.module.configureIdea
 import korlibs.korge.gradle.targets.ProjectType
 import korlibs.korge.gradle.targets.all.enableFeaturesOnAllTargets
 import korlibs.korge.gradle.targets.isLinux
@@ -17,14 +16,12 @@ import korlibs.korge.gradle.targets.linux.LDLibraries
 import korlibs.korge.gradle.typedresources.configureTypedResourcesGenerator
 import korlibs.korge.gradle.util.AnsiEscape
 import korlibs.korge.gradle.util.Json
-import korlibs.korge.gradle.util.applyOnce
 import korlibs.korge.gradle.util.checkGradleVersion
 import korlibs.korge.gradle.util.checkMinimumJavaVersion
 import korlibs.korge.gradle.util.createThis
 import korlibs.korge.gradle.util.dyn
 import korlibs.korge.gradle.util.projectExtension
 import korlibs.modules.configureTests
-import korlibs.root.RootKorlibsPlugin
 import kotlin.concurrent.thread
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -33,7 +30,6 @@ import org.gradle.api.tasks.diagnostics.DependencyReportTask
 import org.gradle.internal.classloader.ClassLoaderHierarchy
 import org.gradle.internal.classloader.ClassLoaderVisitor
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.korge.gradle.BuildVersions
 
 class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
     fun apply(includeIndirectAndroid: Boolean = true) = project {
@@ -53,15 +49,11 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 
         project.korge.init(includeIndirectAndroid, projectType)
 
-        project.configureIdea()
-        project.addVersionExtension()
         project.configureRepositories()
-        project.configureKotlin()
 
         korge.targetJvm()
 
         project.afterEvaluate {
-            project.configureDependencies()
             project.addGenResourcesTasks()
             project.enableFeaturesOnAllTargets()
 
@@ -69,30 +61,6 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
         }
 
         project.configureTypedResourcesGenerator()
-    }
-
-    private fun Project.configureDependencies() {
-        dependencies {
-            add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-            add("commonMainApi", "${RootKorlibsPlugin.KORGE_GROUP}:korge:${korgeVersion}")
-        }
-    }
-
-    @Deprecated("Version extensions will no longer be supported.")
-    private fun Project.addVersionExtension() {
-        ext.set("korgeVersion", korgeVersion)
-        ext.set("kotlinVersion", kotlinVersion)
-        ext.set("coroutinesVersion", coroutinesVersion)
-    }
-
-    private fun Project.configureKotlin() {
-        plugins.applyOnce("kotlin-multiplatform")
-
-        project.korge.addDependency(
-            "commonMainImplementation",
-            "org.jetbrains.kotlin:kotlin-stdlib-common"
-        )
-        project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test")
     }
 }
 
@@ -150,7 +118,7 @@ fun Project.configureBuildScriptClasspathTasks() {
 val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
 val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
 
-fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback).also { it.finish() }
+fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback)
 val Project.kotlin: KotlinMultiplatformExtension
     get() = this.extensions.getByType(
         KotlinMultiplatformExtension::class.java
@@ -196,13 +164,13 @@ val Project.korgeInstallUUID: String
     }
 
 fun Project.korgeVersionJson(telemetry: Boolean): String {
-    val defaultJson = """{"version": "${BuildVersions.KORGE}", "motd": "Fallback"}"""
+    val defaultJson = """{"version": "${project.version}", "motd": "Fallback"}"""
     return korgeCacheData.getOrPut("korgeVersionJson") {
         val versionJsonFile = File(korgeCacheDir, "version.json")
         if (!versionJsonFile.isFile && System.currentTimeMillis() - versionJsonFile.lastModified() >= 24 * 3600 * 1000L) {
             val base = "https://version.korge.org/version.json?source=gradle"
             val props: Map<String, String> = mapOf(
-                "version" to BuildVersions.KORGE,
+                "version" to project.version.toString(),
                 "install.uuid" to korgeInstallUUID,
                 "ci" to (System.getenv("CI") == "true").toString(),
                 "os.name" to System.getProperty("os.name"),
@@ -250,10 +218,10 @@ fun Project.korgeCheckVersion(report: Boolean = true, telemetry: Boolean = true)
             val latestVersion = versionJson["version"].str
             val motd = versionJson["motd"].str
 
-            if (report && latestVersion != BuildVersions.KORGE) {
+            if (report && latestVersion != project.version.toString()) {
                 logger.warn(AnsiEscape {
                     listOf(
-                        "You are using KorGE '${BuildVersions.KORGE}', but there is a new version available '$latestVersion' : $motd".yellow.bgGreen,
+                        "You are using KorGE '${project.version}', but there is a new version available '$latestVersion' : $motd".yellow.bgGreen,
                         "- You can change your KorGE version typically in the file `gradle/libs.versions.toml` or in your `build.gradle.kts`".yellow,
                         "- You can disable this notice by changing `korge { checkVersion(report = false) }` in your `build.gradle.kts`".yellow,
                     ).joinToString("\n")

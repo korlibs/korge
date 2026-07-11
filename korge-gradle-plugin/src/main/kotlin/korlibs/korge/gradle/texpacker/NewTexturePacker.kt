@@ -5,7 +5,6 @@ import java.awt.Dimension
 import java.awt.Rectangle
 import java.io.File
 import org.gradle.api.GradleException
-import org.korge.gradle.BuildVersions
 
 object NewTexturePacker {
     data class Info(
@@ -68,7 +67,8 @@ object NewTexturePacker {
      * Each tileset image is split into individual tiles of the specified size.
      * These tiles are checked for duplicates and then packed into atlases.
      *
-     * @param folders The folders containing tilesets to be packed.
+     * @param version The version to use in the atlas info.
+     * @param files The folders containing tilesets to be packed.
      * @param padding The padding to apply around each tile in the atlas.
      * @param tileWidth The width of each tile in the tilesets.
      * @param tileHeight The height of each tile in the tilesets.
@@ -110,7 +110,16 @@ object NewTexturePacker {
             tilesetNames += name
         }
 
-        val atlasInfo = packImages(images, enableRotation = false, enableTrimming = false, padding = padding, trimFileName = true, removeDuplicates = true, textureAtlasWidth, textureAtlasHeight)
+        val atlasInfo = packImages(
+            images = images,
+            enableRotation = false,
+            enableTrimming = false,
+            padding = padding,
+            trimFileName = true,
+            removeDuplicates = true,
+            textureAtlasWidth = textureAtlasWidth,
+            textureAtlasHeight = textureAtlasHeight,
+        )
         return atlasInfo
     }
 
@@ -143,7 +152,16 @@ object NewTexturePacker {
                 null
             }
         }
-        return packImages(images, enableRotation, enableTrimming, padding, trimFileName, removeDuplicates, textureAtlasWidth, textureAtlasHeight)
+        return packImages(
+            images = images,
+            enableRotation = enableRotation,
+            enableTrimming = enableTrimming,
+            padding = padding,
+            trimFileName = trimFileName,
+            removeDuplicates = removeDuplicates,
+            textureAtlasWidth = textureAtlasWidth,
+            textureAtlasHeight = textureAtlasHeight,
+        )
     }
 
     internal fun packImages(
@@ -154,7 +172,7 @@ object NewTexturePacker {
         trimFileName: Boolean,
         removeDuplicates: Boolean,
         textureAtlasWidth: Int,
-        textureAtlasHeight: Int
+        textureAtlasHeight: Int,
     ): List<AtlasInfo> {
         val packer = NewBinPacker.MaxRectsPacker(textureAtlasWidth, textureAtlasHeight, padding * 2, NewBinPacker.IOption(
             smart = true,
@@ -250,7 +268,6 @@ object NewTexturePacker {
                 "frames" to frames,
                 "meta" to mapOf(
                     "app" to "https://korge.org/",
-                    "version" to BuildVersions.KORGE,
                     "image" to "",
                     "format" to "RGBA8888",
                     "size" to mapOf(

@@ -1,33 +1,37 @@
-import korlibs.korge.gradle.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.apple.*
-import org.jetbrains.kotlin.gradle.tasks.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
+    alias(libs.plugins.kotlin.multiplatform)
 	alias(libs.plugins.korge.library)
+	alias(libs.plugins.kotlin.serialization)
 }
 
-//apply
-//apply(plugin = "")
-//KorgeLibraryGradlePlugin().apply(project)
-
-/*
 kotlin {
-    val xcf = XCFramework("iosUniversal")
-    //val iosTargets = listOf(iosX64(), iosArm64(), iosSimulatorArm64())
-    val iosTargets = listOf(iosX64(), iosArm64())
+    val iosTargets = listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64(),
+    )
 
-    for (target in iosTargets) {
-        var framework: Framework? = null
+    // Optionally add more targets
 
+    val xcf = XCFramework("ios")
+    iosTargets.forEach { target ->
         target.binaries.framework {
-            framework = target.binaries.findFramework(NativeBuildType.DEBUG)
+            baseName = "GameMain"
+            xcf.add(this)
+            export(libs.korlibs.image)
         }
-        //baseName = "shared"
-        xcf.add(target.binaries.findFramework(NativeBuildType.DEBUG)!!)
+    }
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.korge.engine)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.korlibs.image)
+        }
     }
 }
-*/
 
 korge {
 	id = "com.sample.demo"
@@ -43,25 +47,5 @@ korge {
 	
 	targetJvm()
 	targetJs()
-	targetDesktop()
-	targetIos()
 	targetAndroid()
-
-	serializationJson()
-}
-
-kotlin {
-    iosSimulatorArm64().binaries {
-        //framework {
-        //    export(project(":dependency"))
-        //    export("org.example:exported-library:1.0")
-        //}
-        //framework().apply {
-            // It's possible to export different sets of dependencies to different binaries.
-            //export(/"org.korge.korlibs:korlibs-image")
-        //}
-        findFramework(NativeBuildType.DEBUG)!!.apply {
-            export("org.korge.korlibs:korlibs-image")
-        }
-    }
 }

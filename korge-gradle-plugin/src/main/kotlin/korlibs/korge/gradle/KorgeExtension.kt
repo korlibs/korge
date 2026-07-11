@@ -26,9 +26,7 @@ import korlibs.root.RootKorlibsPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.logging.LogLevel
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.korge.gradle.BuildVersions
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
 enum class DisplayCutout(val lc: String) { DEFAULT("default"), SHORT_EDGES("shortEdges"), NEVER("never"), ALWAYS("always") }
@@ -217,8 +215,6 @@ open class KorgeExtension(@Inject val project: Project) {
 
             for (plugin in info["plugins"].list) {
                 when (val pluginStr = plugin.str) {
-                    $$"$kotlin.serialization" -> serialization()
-                    $$"$kotlin.serialization.json" -> serializationJson()
                     else -> project.logger.log(LogLevel.WARN, "Unknown plugin in korge.yaml: '${pluginStr}'")
                 }
             }
@@ -325,24 +321,6 @@ open class KorgeExtension(@Inject val project: Project) {
         targetIos()
     }
 
-    /**
-     * Enables kotlinx.serialization
-     */
-    fun serialization() {
-        project.plugins.apply("kotlinx-serialization")
-        androidGradlePlugin("kotlinx-serialization")
-        androidGradleClasspath("org.jetbrains.kotlin:kotlin-serialization:${BuildVersions.KOTLIN}")
-    }
-
-    /**
-     * Enables kotlinx.serialization and includes `org.jetbrains.kotlinx:kotlinx-serialization-json`
-     */
-    fun serializationJson() {
-        serialization()
-        project.dependencies.add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
-        androidGradleDependency("org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
-    }
-
     val resourceProcessors = arrayListOf<KorgeResourceProcessor>()
 
     fun addResourceProcessor(processor: KorgeResourceProcessor) {
@@ -376,18 +354,18 @@ open class KorgeExtension(@Inject val project: Project) {
 	var supressWarnings: Boolean = false
 
     val versionSubstitutions = LinkedHashMap<String, String>().also {
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge"] = BuildVersions.KORGE
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-root"] = BuildVersions.KORGE
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-core"] = BuildVersions.KORGE
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-platform"] = BuildVersions.KORGE
-        it["${RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent"] = BuildVersions.KORGE
-        it["${RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP}:korge-gradle-plugin"] = BuildVersions.KORGE
+        it["${KORGE_GROUP}:korge"] = project.version.toString()
+        it["${KORGE_GROUP}:korge-root"] = project.version.toString()
+        it["${KORGE_GROUP}:korge-core"] = project.version.toString()
+        it["${KORGE_GROUP}:korge-platform"] = project.version.toString()
+        it["${KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent"] = project.version.toString()
+        it["${KORGE_GRADLE_PLUGIN_GROUP}:korge-gradle-plugin"] = project.version.toString()
     }
 
     val artifactSubstitution = LinkedHashMap<String, String>().also {
-        val korgeArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge:${BuildVersions.KORGE}"
-        val korgeFoundationArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge-foundation:${BuildVersions.KORGE}"
-        val korgeCoreArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge-core:${BuildVersions.KORGE}"
+        val korgeArtifact = "${KORGE_GROUP}:korge:${project.version}"
+        val korgeFoundationArtifact = "${KORGE_GROUP}:korge-foundation:${project.version}"
+        val korgeCoreArtifact = "${KORGE_GROUP}:korge-core:${project.version}"
 
         it["com.soywiz.korlibs.korge2:korge"] = korgeArtifact
         it["com.soywiz.korlibs.korgw:korgw"] = korgeArtifact
@@ -434,7 +412,6 @@ open class KorgeExtension(@Inject val project: Project) {
 
     var searchResourceProcessorsInMainSourceSet: Boolean = false
 
-    var skipDeps: Boolean = false
     var icon: File? = File(project.projectDir, "icon.png")
     var banner: File? = File(project.projectDir, "banner.png")
 
@@ -520,11 +497,6 @@ open class KorgeExtension(@Inject val project: Project) {
     val androidCustomApplicationAttributes = LinkedHashMap<String, String>()
     var androidMsaa: Int? = null
 
-    fun plugin(name: String, args: Map<String, String> = mapOf()) {
-		dependencyMulti(name, registerPlugin = false)
-        plugins.addPlugin(MavenLocation(name)).addArgs(args)
-    }
-
 	internal val defaultPluginsClassLoader by lazy { plugins.classLoader }
 
     var androidReleaseSignStoreFile: String = "build/korge.keystore"
@@ -580,76 +552,23 @@ open class KorgeExtension(@Inject val project: Project) {
 		authorHref = href
 	}
 
-	fun dependencyProject(name: String) = project {
-		dependencies {
-			add("commonMainApi", project(name))
-			add("commonTestImplementation", project(name))
-		}
-	}
-
 	val ALL_NATIVE_TARGETS by lazy { listOf("iosArm64", "iosX64", "iosSimulatorArm64") }
 	val ALL_TARGETS by lazy { listOf("js", "jvm", "metadata") + ALL_NATIVE_TARGETS }
-
-	@JvmOverloads
-	fun dependencyMulti(group: String, name: String, version: String, targets: List<String> = ALL_TARGETS, suffixCommonRename: Boolean = false, androidIsJvm: Boolean = false): Unit = project {
-		project.dependencies {
-            add("commonMainApi", "$group:$name:$version")
-		}
-	}
-
-	@JvmOverloads
-	fun dependencyMulti(dependency: String, targets: List<String> = ALL_TARGETS, registerPlugin: Boolean = true) {
-		val location = MavenLocation(dependency)
-		if (registerPlugin) plugin(location.full)
-		return dependencyMulti(location.group, location.name, location.versionWithClassifier, targets)
-	}
 
 	data class CInteropTargets(val name: String, val targets: List<String>)
 
 	val cinterops = arrayListOf<CInteropTargets>()
-
 
 	fun dependencyCInterops(name: String, targets: List<String>) = project {
 		cinterops += CInteropTargets(name, targets)
 		for (target in targets) {
       val nativeTarget = kotlin.targets.findByName(target) as? KotlinNativeTarget
         ?: error("Target '$target' is not a Kotlin/Native target")
-      val mainCompilation = nativeTarget.compilations.findByName("main") as? KotlinNativeCompilation
+      val mainCompilation = nativeTarget.compilations.findByName("main")
         ?: error("Target '$target' has no 'main' native compilation")
       mainCompilation.cinterops.maybeCreate(name)
 		}
 	}
-
-	@JvmOverloads
-	fun dependencyCInteropsExternal(dependency: String, cinterop: String, targets: List<String> = ALL_NATIVE_TARGETS) {
-		dependencyMulti("$dependency:cinterop-$cinterop@klib", targets)
-	}
-
-	fun addDependency(config: String, notation: String) {
-		val cfg = project.configurations.findByName(config)
-		if (cfg == null) {
-			// @TODO: Turkish hack. This doesn't seems right. Probably someone messed something up.
-			if (config.endsWith("Implementation")) {
-				val config2 = config.removeSuffix("Implementation") + "İmplementation"
-				println("Can't find config: $config . Trying: $config2 (Turkish hack)")
-				return addDependency(config2, notation)
-			}
-
-			for (rcfg in project.configurations) {
-				println("CONFIGURATION: ${rcfg.name}")
-			}
-			error("Can't find configuration '$config'")
-		}
-		project.dependencies.add(config, notation)
-	}
-
-    fun finish() {
-        if (!skipDeps && project.allprojects.any { it.path == ":deps" }) {
-            project.dependencies {
-                add("commonMainApi", project.project(":deps"))
-            }
-        }
-    }
 }
 
 fun Project.resolveArtifacts(vararg artifacts: String): Set<File> {

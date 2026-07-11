@@ -1,6 +1,16 @@
-import korlibs.korge.gradle.*
+plugins {
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.korge.library)
+}
 
-apply<KorgeLibraryGradlePlugin>()
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.korge.engine)
+            implementation(libs.korlibs.image)
+        }
+    }
+}
 
 korge {
     targetJvm()

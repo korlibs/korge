@@ -4,6 +4,8 @@ plugins {
 
 dependencies {
     implementation(projects.shared)
+    implementation(libs.korge)
+    implementation(libs.korge.core)
 }
 
 android {

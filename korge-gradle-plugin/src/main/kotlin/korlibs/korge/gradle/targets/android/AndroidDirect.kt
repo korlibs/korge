@@ -2,19 +2,16 @@ package korlibs.korge.gradle.targets.android
 
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import com.android.build.gradle.tasks.MergeSourceSetFolders
-import korlibs.invoke
 import korlibs.korge.gradle.korge
 import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.ProjectType
 import korlibs.korge.gradle.targets.all.AddFreeCompilerArgs
 import korlibs.korge.gradle.targets.jvm.ensureSourceSetsConfigure
-import korlibs.korge.gradle.util.SemVer
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-import org.korge.gradle.BuildVersions
 
 fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
     if (!AndroidSdk.hasAndroidSdk(this)) {
@@ -63,18 +60,6 @@ private fun Project.configureAndroidLibrary(isKorge: Boolean) {
 
     ensureSourceSetsConfigure("common", "android")
 
-    // TODO Let the module itself configure the dependencies and remove this block
-    dependencies {
-        if (SemVer(BuildVersions.KOTLIN) >= SemVer("2.3.20")) {
-            add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-        }
-        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-
-        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-        add("androidTestImplementation", "androidx.test:core:1.7.0")
-        add("androidTestImplementation", "androidx.test.ext:junit:1.3.0")
-        add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.7.0")
-    }
     val android = extensions.getByType(KotlinMultiplatformExtension::class.java).targets.findByName("android") as KotlinMultiplatformAndroidLibraryTarget
 
     android.apply {

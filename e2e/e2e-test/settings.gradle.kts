@@ -18,7 +18,7 @@ plugins {
 include(
     ":shared",
     ":androidApp",
-    // Uncomment once korge plugin is migrated
-//    ":desktopApp",
+    ":desktopApp",
+    // TODO Uncomment once korge plugin is migrated
 //    ":webApp",
 )
