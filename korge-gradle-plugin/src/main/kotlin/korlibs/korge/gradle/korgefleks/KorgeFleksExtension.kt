@@ -1,6 +1,7 @@
 package korlibs.korge.gradle.korgefleks
 
 import korlibs.korge.gradle.extensionGetOrCreate
+import korlibs.korge.gradle.targets.GROUP_KORGE_ASSETS
 import korlibs.korge.gradle.util.createThis
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -26,8 +27,6 @@ val Project.korgeFleks: KorgeFleksExtension get() = extensionGetOrCreate("korgeF
 open class KorgeFleksExtension(
     @Inject val project: Project,
 ) {
-    private val assetGroup = "assets"
-
     var asepriteExe: String = ""
     var baseResourcesPath: String = "resources"
     var textureAtlasName: String = "texture"
@@ -62,7 +61,7 @@ open class KorgeFleksExtension(
         assetConfig.atlasHeight = atlasHeight
 
         project.tasks.createThis<Task>("${taskName}Assets") {
-            group = assetGroup
+            group = GROUP_KORGE_ASSETS
             doLast {
                 assetConfig.apply(config)
                 assetConfig.buildAssetStore()
@@ -102,7 +101,7 @@ open class KorgeFleksExtension(
         val taskName = "${worldName}${clusterName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
             .replace("/", "").replace("_", "")
         project.tasks.createThis<Task>("${taskName}Assets") {
-            group = assetGroup
+            group = GROUP_KORGE_ASSETS
             doLast {
                 assetConfig.apply(config)
                 assetConfig.buildAssetStore(assetResourcePath)
@@ -129,7 +128,7 @@ open class KorgeFleksExtension(
 
         val taskName = assetName.replace("/", "").replace("_", "")
         project.tasks.createThis<Task>("${taskName}Assets") {
-            group = assetGroup
+            group = GROUP_KORGE_ASSETS
             doLast {
                 assetConfig.apply(config)
                 assetConfig.buildAssetStore()  // start to load the level map
