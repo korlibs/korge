@@ -13,12 +13,14 @@ import java.io.File
  * @param projectDir The root directory of the project.
  * @param assetPath The relative path to the directory containing asset files.
  * @param resourcePath The relative path to the directory for game resources.
+ * @param baseResourcesPath The base path for game resources.
  */
 open class AssetConfig(
     private val asepriteExe: String,
     projectDir: File,
     assetPath: String,
-    resourcePath: String
+    resourcePath: String,
+    baseResourcesPath: String
 ) {
     var assetInfoName: String = "assets"
     var textureAtlasName: String = "texture"
@@ -48,7 +50,7 @@ open class AssetConfig(
     // Directory where exported tiles and tilesets will be stored
     protected val exportTilesDir = projectDir.resolve("build/assets/imageAtlasInput")
     // Directory where game resources are located
-    protected val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
+    protected val gameResourcesDir = projectDir.resolve("${baseResourcesPath}/${resourcePath}")
 
     protected val assetInfo = linkedMapOf<String, Any>()
 
@@ -189,8 +191,9 @@ class WorldClusterAssetConfig(
     projectDir: File,
     assetPath: String,
     resourcePath: String,
+    baseResourcesPath: String,
     private val clusterName: String
-) : AssetConfig(asepriteExe, projectDir, assetPath, resourcePath) {
+) : AssetConfig(asepriteExe, projectDir, assetPath, resourcePath, baseResourcesPath) {
 
     private val tileSetFiles: MutableList<File> = mutableListOf()
     private val exportTilesetDir = projectDir.resolve("build/assets/tilesetAtlasInput")
@@ -285,12 +288,13 @@ class WorldClusterAssetConfig(
 class WorldLevelMapAssetConfig(
     projectDir: File,
     worldName: String,
+    baseResourcesPath: String,
     private val assetPath: String = "",
 ) {
     var simplifyJson: Boolean = true
 
     // Directory where game resources are located
-    private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${worldName}")
+    private val gameResourcesDir = projectDir.resolve("${baseResourcesPath}/${worldName}")
     private val assetLevelMapExporter = AssetLevelMapExporter(projectDir, gameResourcesDir, linkedMapOf(), amountOfTiles = 64 * 64)  // Default to 4096 tiles per tileset)
 
     // Save input data for exporters

@@ -29,6 +29,7 @@ open class KorgeFleksExtension(
     private val assetGroup = "assets"
 
     var asepriteExe: String = ""
+    var baseResourcesPath: String = "resources"
     var textureAtlasName: String = "texture"
     var tilesetAtlasName: String = "tileset"
     var atlasWidth: Int = 2048
@@ -53,7 +54,7 @@ open class KorgeFleksExtension(
         if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
 
         val taskName = "common"
-        val assetConfig = AssetConfig(asepriteExe, project.projectDir, path, taskName )
+        val assetConfig = AssetConfig(asepriteExe, project.projectDir, path, taskName, baseResourcesPath)
         // Set default names and atlas size
         assetConfig.textureAtlasName = textureAtlasName
         assetConfig.tilesetAtlasName = tilesetAtlasName
@@ -91,7 +92,7 @@ open class KorgeFleksExtension(
         if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
 
         val assetResourcePath = "${worldName}/${clusterName}"
-        val assetConfig = WorldClusterAssetConfig(asepriteExe, project.projectDir, path, assetResourcePath, clusterName)
+        val assetConfig = WorldClusterAssetConfig(asepriteExe, project.projectDir, path, assetResourcePath, baseResourcesPath, clusterName)
         // Set default names and atlas size
         assetConfig.textureAtlasName = textureAtlasName
         assetConfig.tilesetAtlasName = tilesetAtlasName
