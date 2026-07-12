@@ -50,7 +50,7 @@ open class AssetConfig(
     // Directory where exported tiles and tilesets will be stored
     protected val exportTilesDir = projectDir.resolve("build/assets/imageAtlasInput")
     // Directory where game resources are located
-    protected val gameResourcesDir = projectDir.resolve("${baseResourcesPath}/${resourcePath}")
+    protected val gameResourcesDir: File
 
     protected val assetInfo = linkedMapOf<String, Any>()
 
@@ -58,6 +58,12 @@ open class AssetConfig(
         // Make sure the export directories exist and that they are empty
         if (exportTilesDir.exists()) exportTilesDir.deleteRecursively()
         exportTilesDir.mkdirs()
+
+        // Make sure we have a valid game resources directory (prevent producing an absolute path if baseResourcesPath is empty)
+        gameResourcesDir = if (baseResourcesPath.isEmpty())
+            projectDir.resolve(resourcePath)
+        else
+            projectDir.resolve("${baseResourcesPath}/${resourcePath}")
 
         // Set version info
         val major = 1
@@ -289,7 +295,7 @@ class WorldLevelMapAssetConfig(
     projectDir: File,
     worldName: String,
     baseResourcesPath: String,
-    private val assetPath: String = "",
+    private val assetPath: String,
 ) {
     var simplifyJson: Boolean = true
 

@@ -125,7 +125,7 @@ open class KorgeFleksExtension(
         config: WorldLevelMapAssetConfig.() -> Unit
     ) {
         val assetName = "${worldName}LevelMap"
-        val assetConfig = WorldLevelMapAssetConfig(project.projectDir, worldName, path)
+        val assetConfig = WorldLevelMapAssetConfig(project.projectDir, worldName, baseResourcesPath, path)
 
         val taskName = assetName.replace("/", "").replace("_", "")
         project.tasks.createThis<Task>("${taskName}Assets") {
