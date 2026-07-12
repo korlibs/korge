@@ -60,8 +60,6 @@ dependencies {
 }
 
 // Ensure the vanniktech maven-publish extension creates the Maven Central publish tasks
-// (some of the root auto-configuration intentionally skips projects named like "korge-gradle-plugin...")
-// Configure the extension directly so tasks such as `publishToMavenCentral` are available.
-configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
+mavenPublishing {
     publishToMavenCentral()
 }
