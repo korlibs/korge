@@ -104,3 +104,8 @@ kotlin {
         }
     }
 }
+
+// Ensure the vanniktech maven-publish extension creates the Maven Central publish tasks
+mavenPublishing {
+    publishToMavenCentral()
+}

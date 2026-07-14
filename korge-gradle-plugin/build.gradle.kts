@@ -58,3 +58,8 @@ dependencies {
 
     testImplementation(libs.bundles.kotlin.test)
 }
+
+// Ensure the vanniktech maven-publish extension creates the Maven Central publish tasks
+mavenPublishing {
+    publishToMavenCentral()
+}
