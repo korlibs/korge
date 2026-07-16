@@ -415,10 +415,13 @@ class AssetLevelMapExporter(
 
                                 // Add position of entity
                                 (ldtkEntity["__tags"] as List<String>).firstOrNull { it == "positionable" }?.let {
+                                    // Parse chunk number from chunk name
+                                    val chunkNumber: Int = chunkName.substringAfterLast("_").toInt()
                                     chunkEntity["x"] = entityPosX
                                     chunkEntity["y"] = entityPosY
-                                    chunkEntity["anchorX"] = (entityPivotX * ldtkEntity["width"] as Int).toInt()
-                                    chunkEntity["anchorY"] = (entityPivotY * ldtkEntity["height"] as Int).toInt()
+                                    chunkEntity["chunk"] = chunkNumber
+                                    chunkEntity["pivotX"] = (entityPivotX * ldtkEntity["width"] as Int).toInt()
+                                    chunkEntity["pivotY"] = (entityPivotY * ldtkEntity["height"] as Int).toInt()
                                 }
                                 // Add all other fields of entity
                                 ldtkEntities.forEach { field ->
