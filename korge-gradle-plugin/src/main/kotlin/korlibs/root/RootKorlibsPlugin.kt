@@ -16,12 +16,9 @@ import korlibs.korge.gradle.targets.all.rootEnableFeaturesOnAllTargets
 import korlibs.korge.gradle.targets.android.AndroidSdk
 import korlibs.korge.gradle.targets.android.GRADLE_JAVA_VERSION_STR
 import korlibs.korge.gradle.targets.android.configureAndroidDirect
-import korlibs.korge.gradle.targets.createPairSourceSet
 import korlibs.korge.gradle.targets.ios.configureNativeIos
-import korlibs.korge.gradle.targets.isIos
 import korlibs.korge.gradle.targets.isLinux
 import korlibs.korge.gradle.targets.isMacos
-import korlibs.korge.gradle.targets.isTvos
 import korlibs.korge.gradle.targets.isWindows
 import korlibs.korge.gradle.targets.js.configureDenoRun
 import korlibs.korge.gradle.targets.js.configureDenoTest
@@ -66,6 +63,7 @@ import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.testing.Test
+import org.gradle.kotlin.dsl.provideDelegate
 import org.gradle.testing.base.plugins.TestingBasePlugin
 import org.jetbrains.dokka.gradle.AbstractDokkaTask
 import org.jetbrains.dokka.gradle.DokkaExtension
@@ -353,83 +351,63 @@ object RootKorlibsPlugin {
                     }
 
                     sourceSets.apply {
-
-                        val common = createPairSourceSet("common", project = project) { test ->
+                        findByName("commonMain")?.apply {
                             dependencies {
-                                if (test) {
-                                    implementation(kotlin("test-common"))
-                                    implementation(kotlin("test-annotations-common"))
-                                } else {
-                                    implementation(kotlin("stdlib-common"))
-                                }
+                                implementation(kotlin("stdlib-common"))
                             }
                         }
 
-                        val concurrent = createPairSourceSet("concurrent", common, project = project)
-                        val jvmAndroid = createPairSourceSet("jvmAndroid", concurrent, project = project)
-
-                        // Default source set for JVM-specific sources and dependencies:
-                        // JVM-specific tests and their dependencies:
-                        val jvm = createPairSourceSet("jvm", jvmAndroid, project = project) { test ->
+                        findByName("commonTest")?.apply {
                             dependencies {
-                                if (test) {
-                                    implementation(kotlin("test-junit"))
-                                } else {
-                                    implementation(kotlin("stdlib-jdk8"))
-                                }
+                                implementation(kotlin("test-common"))
+                                implementation(kotlin("test-annotations-common"))
                             }
                         }
 
-                        if (hasAndroid) {
-                            val android = createPairSourceSet("android", jvmAndroid, doTest = false, project = project) { test ->
-                                dependencies {
-                                    if (test) {
-                                        implementation(kotlin("test-junit"))
-                                    }
-                                }
-                            }
-                        }
-
-                        val js = createPairSourceSet("js", common, project = project) { test ->
+                        findByName("jvmMain")?.apply {
                             dependencies {
-                                if (test) {
-                                    implementation(kotlin("test-js"))
-                                } else {
-                                    implementation(kotlin("stdlib-js"))
-                                }
+                                implementation(kotlin("stdlib-jdk8"))
                             }
                         }
 
-                        if (isWasmEnabled(project)) {
-                            val wasm = createPairSourceSet("wasmJs", common, project = project) { test ->
-                                dependencies {
-                                    if (test) {
-                                        implementation(kotlin("test-wasm-js"))
-                                    } else {
-                                        implementation(kotlin("stdlib-wasm-js"))
-                                    }
-                                }
+                        findByName("jvmTest")?.apply {
+                            dependencies {
+                                implementation(kotlin("test-junit"))
+                            }
+                        }
+
+                        // Previously androidTest, now androidHostTest and/or androidDeviceTest
+                        findByName("androidHostTest")?.apply {
+                            dependencies {
+                                implementation(kotlin("test-junit"))
+                            }
+                        }
+
+                        findByName("jsMain")?.apply {
+                            dependencies {
+                                implementation(kotlin("stdlib-js"))
+                            }
+                        }
+
+                        findByName("jsTest")?.apply {
+                            dependencies {
+                                implementation(kotlin("test-js"))
+                            }
+                        }
+
+                        findByName("wasmJsMain")?.apply {
+                            dependencies {
+                                implementation(kotlin("stdlib-wasm-js"))
+                            }
+                        }
+
+                        findByName("wasmJsTest")?.apply {
+                            dependencies {
+                                implementation(kotlin("test-wasm-js"))
                             }
                         }
 
                         if (supportKotlinNative) {
-                            val native by lazy { createPairSourceSet("native", concurrent, project = project) }
-                            val posix by lazy { createPairSourceSet("posix", native, project = project) }
-                            val apple by lazy { createPairSourceSet("apple", posix, project = project) }
-                            val darwin by lazy { createPairSourceSet("darwin", apple, project = project) }
-                            val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin, project = project) }
-                            val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile/*, iosTvosMacos*/, project = project) }
-                            val tvos by lazy { createPairSourceSet("tvos", iosTvos, project = project) }
-                            val ios by lazy { createPairSourceSet("ios", iosTvos/*, iosMacos*/, project = project) }
-
-                            for (target in mobileTargets(project)) {
-                                val native = createPairSourceSet(target.name, project = project)
-                                when {
-                                    target.isIos -> native.dependsOn(ios)
-                                    target.isTvos -> native.dependsOn(tvos)
-                                }
-                            }
-
                             // Copy test resources
                             afterEvaluate {
                                 for (targetV in (listOf(iosX64(), iosSimulatorArm64()))) {

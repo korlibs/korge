@@ -6,7 +6,6 @@ import korlibs.korge.gradle.korge
 import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.ProjectType
 import korlibs.korge.gradle.targets.all.AddFreeCompilerArgs
-import korlibs.korge.gradle.targets.jvm.ensureSourceSetsConfigure
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -57,8 +56,6 @@ private fun Project.configureAndroidLibrary(isKorge: Boolean) {
 //            withDeviceTest {}
 //        }
     }
-
-    ensureSourceSetsConfigure("common", "android")
 
     val android = extensions.getByType(KotlinMultiplatformExtension::class.java).targets.findByName("android") as KotlinMultiplatformAndroidLibraryTarget
 
