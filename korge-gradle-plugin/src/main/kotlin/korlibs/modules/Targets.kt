@@ -18,7 +18,7 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.des
     val out = arrayListOf<KotlinNativeTarget>()
     out.addAll(listOf(linuxX64(), linuxArm64()))
     out.addAll(listOf(mingwX64()))
-    out.addAll(listOf(macosX64(), macosArm64()))
+    out.addAll(listOf(macosArm64()))
     return out
 }
 

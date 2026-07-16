@@ -115,7 +115,6 @@ val appleTestTargets = listOf(
     "tvosArm64",
     "tvosX64",
     "macosArm64",
-    "macosX64",
     "watchosSimulatorArm64",
     "watchosArm64",
 )

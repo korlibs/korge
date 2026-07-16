@@ -560,12 +560,6 @@ object RootKorlibsPlugin {
                         }
                     }
 
-                    val publishMacosX64Local = createThis<Task>("publishMacosX64Local") {
-                        if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
-                            dependsOn("publishMacosX64PublicationToMavenLocal")
-                            dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
-                        }
-                    }
                     val publishMacosArm64Local = createThis<Task>("publishMacosArm64Local") {
                         if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
                             dependsOn("publishMacosArm64PublicationToMavenLocal")
