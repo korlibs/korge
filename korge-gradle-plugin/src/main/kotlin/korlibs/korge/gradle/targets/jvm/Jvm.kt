@@ -12,7 +12,6 @@ import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.GROUP_KORGE_PACKAGE
 import korlibs.korge.gradle.targets.GROUP_KORGE_RUN
 import korlibs.korge.gradle.targets.ProjectType
-import korlibs.korge.gradle.targets.createPairSourceSet
 import korlibs.korge.gradle.targets.desktop.DesktopJreBundler
 import korlibs.korge.gradle.util.KorgeReloadNotifier
 import korlibs.korge.gradle.util.closure
@@ -20,7 +19,6 @@ import korlibs.korge.gradle.util.createThis
 import korlibs.korge.gradle.util.get
 import korlibs.korge.gradle.util.writeTextIfChanged
 import korlibs.main
-import korlibs.root.RootKorlibsPlugin
 import org.gradle.api.NamedDomainObjectSet
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -36,13 +34,6 @@ import proguard.gradle.ProGuardTask
 
 const val KORGE_RELOAD_AGENT_CONFIGURATION_NAME = "KorgeReloadAgent"
 const val httpPort = 22011
-
-fun Project.ensureSourceSetsConfigure(vararg names: String) {
-    val sourceSets = project.kotlin.sourceSets
-    for (name in names) {
-        sourceSets.createPairSourceSet(name, project = project)
-    }
-}
 
 fun Project.configureJvm(projectType: ProjectType) {
     if (gkotlin.targets.findByName("jvm") != null) return
@@ -68,8 +59,6 @@ fun Project.configureJvm(projectType: ProjectType) {
 
     val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
     jvmProcessResources?.duplicatesStrategy = DuplicatesStrategy.INCLUDE
-
-    ensureSourceSetsConfigure("common", "jvm")
 }
 
 fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
@@ -196,7 +185,6 @@ private fun Project.addProguard() {
             "com/sun/jna/sunos-sparcv9/**",
             "com/sun/jna/sunos-x86/**",
             "com/sun/jna/sunos-x86-64/**",
-            "natives/macosx64/**",
             "natives/macosarm64/**",
             "META-INF/*.kotlin_module",
         )

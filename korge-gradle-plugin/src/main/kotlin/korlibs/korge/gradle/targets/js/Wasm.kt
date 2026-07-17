@@ -4,7 +4,6 @@ import java.io.File
 import korlibs.korge.gradle.gkotlin
 import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.ProjectType
-import korlibs.korge.gradle.targets.jvm.ensureSourceSetsConfigure
 import korlibs.korge.gradle.targets.wasm.configureWasmTarget
 import korlibs.korge.gradle.util.createThis
 import korlibs.korge.gradle.util.get
@@ -17,7 +16,6 @@ import org.jetbrains.kotlin.gradle.targets.js.npm.npmProject
 
 fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
     if (gkotlin.targets.findByName("wasm") != null) return
-    ensureSourceSetsConfigure("common", "wasmJs")
 
     configureWasmTarget(executable = true, binaryen = binaryen)
 

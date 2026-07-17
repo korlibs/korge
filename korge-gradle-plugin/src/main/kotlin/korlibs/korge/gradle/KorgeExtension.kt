@@ -22,7 +22,6 @@ import korlibs.korge.gradle.targets.jvm.configureJvm
 import korlibs.korge.gradle.targets.supportKotlinNative
 import korlibs.korge.gradle.util.dyn
 import korlibs.korge.gradle.util.takeIfExists
-import korlibs.root.RootKorlibsPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.logging.LogLevel

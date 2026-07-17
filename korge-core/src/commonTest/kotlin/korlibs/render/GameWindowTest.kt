@@ -1,10 +1,14 @@
 package korlibs.render
 
-import korlibs.image.color.*
-import korlibs.image.vector.*
-import korlibs.io.async.*
-import korlibs.math.geom.*
-import kotlin.test.*
+import korlibs.image.color.Colors
+import korlibs.image.vector.buildShape
+import korlibs.io.async.suspendTest
+import korlibs.math.geom.Point
+import korlibs.math.geom.PointInt
+import korlibs.math.geom.SizeInt
+import korlibs.math.geom.Vector2I
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class GameWindowTest {
     @Test

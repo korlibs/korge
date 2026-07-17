@@ -9,7 +9,6 @@ import korlibs.korge.gradle.korge
 import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.KorgeIconProvider
 import korlibs.korge.gradle.targets.ProjectType
-import korlibs.korge.gradle.targets.jvm.ensureSourceSetsConfigure
 import korlibs.korge.gradle.targets.windows.ICO2
 import korlibs.korge.gradle.util.createThis
 import korlibs.korge.gradle.util.decodeImage
@@ -93,8 +92,6 @@ fun Project.configureJavaScript(projectType: ProjectType) {
         configureJavascriptRun()
     }
     configureWebpack()
-
-    ensureSourceSetsConfigure("common", "js")
 }
 
 fun KotlinJsTargetDsl.configureJsTargetOnce() {

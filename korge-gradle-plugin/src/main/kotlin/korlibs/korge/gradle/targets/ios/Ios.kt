@@ -8,14 +8,9 @@ import korlibs.korge.gradle.targets.GROUP_KORGE_INSTALL
 import korlibs.korge.gradle.targets.GROUP_KORGE_PACKAGE
 import korlibs.korge.gradle.targets.GROUP_KORGE_RUN
 import korlibs.korge.gradle.targets.ProjectType
-import korlibs.korge.gradle.targets.createPairSourceSet
 import korlibs.korge.gradle.targets.desktop.prepareKotlinNativeBootstrap
-import korlibs.korge.gradle.targets.exKotlinSourceSetContainer
 import korlibs.korge.gradle.targets.getIconBytes
 import korlibs.korge.gradle.targets.isArm
-import korlibs.korge.gradle.targets.isIos
-import korlibs.korge.gradle.targets.isTvos
-import korlibs.korge.gradle.targets.jvm.ensureSourceSetsConfigure
 import korlibs.korge.gradle.targets.native.configureKotlinNativeTarget
 import korlibs.korge.gradle.targets.native.getCompileTask
 import korlibs.korge.gradle.targets.native.getLinkTask
@@ -37,19 +32,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 fun Project.configureNativeIos(projectType: ProjectType) {
     configureNativeIosTvos(projectType, "ios")
     configureNativeIosTvos(projectType, "tvos")
-    ensureSourceSetsConfigure("common", "ios", "tvos")
 
-    val exKotlinSourceSetContainer = this.project.exKotlinSourceSetContainer
     this.project.kotlin.apply {
-        sourceSets.apply {
-            for (target in listOf(iosArm64(), iosX64(), iosSimulatorArm64(), tvosArm64(), tvosSimulatorArm64())) {
-                val native = createPairSourceSet(target.name, project = project)
-                when {
-                    target.isIos -> native.dependsOn(exKotlinSourceSetContainer.ios)
-                    target.isTvos -> native.dependsOn(exKotlinSourceSetContainer.tvos)
-                }
-            }
-        }
+        iosArm64()
+        iosX64()
+        iosSimulatorArm64()
+        tvosArm64()
+        tvosSimulatorArm64()
     }
 }
 
