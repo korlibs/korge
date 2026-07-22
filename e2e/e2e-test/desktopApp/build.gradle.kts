@@ -12,7 +12,7 @@ korge {
 
     targetJvm()
 
-    jvmMainClassName = "org.korge.e2e.RefMainKt"
+    jvmMainClassName = "org.korge.e2e.jvm.RefMainKt"
 }
 
 kotlin {

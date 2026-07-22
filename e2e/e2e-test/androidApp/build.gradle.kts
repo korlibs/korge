@@ -28,6 +28,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // TODO Consider moving this to the shared module or the korge plugin configurations
+    sourceSets {
+        getByName("main") {
+            assets.directories.add("../shared/src/commonMain/resources")
+        }
+    }
+
     // Ignore most of the configuration like packaging and signing, as we do not care in e2e tests
     packaging {
         resources {

@@ -30,7 +30,7 @@ class MainActivity : KorgwActivity(config = GameWindowCreationConfig(msaa = 1, f
                 )
 
                 Log.d(TAG, "Determining screenshotsVfs...")
-                val path = Environment["OUTPUT_DIR"] ?: "."
+                val path = applicationContext.getExternalFilesDir(null)!!.absolutePath
                 Log.d(TAG, "Determining screenshotsVfs... $path")
                 val screenshotsVfs = localVfs(path).also { it.mkdirs() }.jail()
                 Log.d(TAG, "vfs: $screenshotsVfs")
