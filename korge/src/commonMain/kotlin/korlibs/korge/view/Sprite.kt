@@ -293,7 +293,7 @@ open class Sprite(
                 }
 
                 AnimationType.DURATION -> {
-                    animationRemainingDuration -= lastAnimationFrameTime
+                    animationRemainingDuration -= this.fastSpriteDisplayTime
                 }
 
                 AnimationType.LOOPED -> {
@@ -302,7 +302,7 @@ open class Sprite(
             if (reversed) --currentSpriteIndex else ++currentSpriteIndex
             totalFramesPlayed++
             triggerEvent(_onFrameChanged)
-            lastAnimationFrameTime = 0.fastSeconds
+            lastAnimationFrameTime -= this.fastSpriteDisplayTime
         }
     }
 
