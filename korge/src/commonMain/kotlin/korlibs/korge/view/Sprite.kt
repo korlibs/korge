@@ -284,7 +284,7 @@ open class Sprite(
 
     private fun nextSprite(frameTime: FastDuration) {
         lastAnimationFrameTime += frameTime
-        if (lastAnimationFrameTime + frameTime >= this.fastSpriteDisplayTime) {
+        if (lastAnimationFrameTime >= this.fastSpriteDisplayTime) {
             when (animationType) {
                 AnimationType.STANDARD -> {
                     if (animationNumberOfFramesRequested > 0) {
