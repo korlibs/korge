@@ -13,8 +13,6 @@ plugins {
 allprojects {
     repositories {
         mavenLocal()
-        mavenCentral()
-        google()
         maven {
             name = "Central Portal Snapshots"
             url = uri("https://central.sonatype.com/repository/maven-snapshots/")
@@ -23,5 +21,7 @@ allprojects {
                 includeGroup("org.korge.korlibs")
             }
         }
+        mavenCentral()
+        google()
     }
 }

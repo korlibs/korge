@@ -66,7 +66,7 @@ abstract class ShaderFilter : FilterWithFiltering {
         /** The [VertexShader] used this [Filter] */
         protected open val vertex: VertexShader = BatchBuilder2D.PROGRAM.vertex
 
-        /** The [FragmentShader] used this [Filter]. This is usually overriden. */
+        /** The [FragmentShader] used this [Filter]. This is usually overridden. */
         protected open val fragment: FragmentShader = ShaderFilter.DEFAULT_FRAGMENT
 
         private val _program: Program by lazy { createProgram(vertex, fragment) }

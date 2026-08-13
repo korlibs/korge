@@ -20,7 +20,5 @@ err.txt
 *.hprof
 *.xcuserstate
 xcuserdata
-kotlin-js-store/
-.kotlin
 /stagedRepositoryId
 /**/build

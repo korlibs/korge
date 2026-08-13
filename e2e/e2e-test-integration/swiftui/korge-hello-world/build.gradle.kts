@@ -10,9 +10,8 @@ kotlin {
     val iosTargets = listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64(),
+        iosSimulatorArm64()
     )
-
     // Optionally add more targets
 
     val xcf = XCFramework("ios")
@@ -21,6 +20,8 @@ kotlin {
             baseName = "GameMain"
             xcf.add(this)
             export(libs.korlibs.image)
+            isStatic = true
+            linkerOpts("-lc++")
         }
     }
 
@@ -30,6 +31,64 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.korlibs.image)
         }
+
+        iosMain.dependencies {
+            implementation(libs.korge.engine)
+            api(libs.korlibs.image)
+        }
+
+        iosX64Main.dependencies {
+            implementation(libs.korlibs.image)
+        }
+
+        iosArm64Main.dependencies {
+            implementation(libs.korlibs.image)
+        }
+
+        iosSimulatorArm64Main.dependencies {
+            implementation(libs.korlibs.image)
+        }
+
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(libs.korge.engine)
+        }
+
+        /*
+                val commonMain by getting {
+                    dependencies {
+                        implementation(libs.korge.engine)
+                        implementation(libs.kotlinx.serialization.json)
+                        implementation(libs.korlibs.image)
+                    }
+                }
+
+                val iosMain by creating {
+                    dependsOn(commonMain)
+                    dependencies {
+                        api(libs.korlibs.image)
+                    }
+                }
+
+                val iosX64Main by getting {
+                    dependsOn(iosMain)
+                }
+
+                val iosArm64Main by getting {
+                    dependsOn(iosMain)
+                }
+
+                val iosSimulatorArm64Main by getting {
+                    dependsOn(iosMain)
+                }
+
+                val commonTest by getting {
+                    dependencies {
+                        implementation(kotlin("test"))
+                        implementation(libs.korge.engine)
+                    }
+                }
+        */
     }
 }
 
@@ -45,7 +104,7 @@ korge {
 
 // To selectively enable targets
 	
-	targetJvm()
-	targetJs()
-	targetAndroid()
+//	targetJvm()
+//	targetJs()
+//	targetAndroid()
 }
