@@ -14,7 +14,6 @@ on:
       - '**'
       - '!**.gitignore'
       - '!**.md'
-      - '!**.github/workflows/*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -209,7 +208,7 @@ jobs:
             publishToMavenLocal \
             :korge-gradle-plugin:publishToMavenLocal
       - name: Run e2e SwiftUI integration
-        run: "./gradlew -p e2e/e2e-test-integration/swiftui/korge-hello-world build"
+        run: "./gradlew -p e2e/e2e-test-integration/swiftui/korge-hello-world check"
       - name: Build Korge iOS simulator framework
         run: "./gradlew -p e2e/e2e-test-integration/swiftui/korge-hello-world linkDebugFrameworkIosSimulatorArm64"
       - name: Build SwiftUI Xcode integration project
@@ -222,6 +221,9 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build/xcode-derived-data/SwiftUIKorgeIntegration \
             -resultBundlePath build/xcode-results/SwiftUIKorgeIntegration.xcresult \
+            ARCHS=arm64 \
+            EXCLUDED_ARCHS=x86_64 \
+            ONLY_ACTIVE_ARCH=YES \
             CODE_SIGNING_ALLOWED=NO \
             clean build
       - name: Archive E2E SwiftUI Test Results
