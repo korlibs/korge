@@ -51,6 +51,11 @@ For more information, visit:
 * <https://discord.korge.org/>
 
 ## News:
+### 08-Sep-2026:
+  Korge was updated to Gradle 9 and Android Gradle Plugin 9. This brings changes in the application
+  setup. For a starting point take a look at the `korge-sandbox` module in this repo or check the
+  `korlibs/korge-hello-world` repo on GitHub.
+
 ### 02-May-2026:
   We are moving Korge to a new namespace on maven central, from `com.soywiz.korge` to `org.korge`.
   This a breaking change. You will need to change your dependencies to use the new namespace in the configuration of
@@ -62,24 +67,23 @@ For more information, visit:
 korge = { id = "org.korge.engine", version = "7.0.0-SNAPSHOT" }   # <-- New namespace, use latest snapshot version
 ```
 
-
-
 ## Usage:
 
-KorGE and all the other korlibs in a single monorepo.
+- The latest official release on Maven Central is `6.0.0`
+- The current snapshot release on Maven Central is `7.0.0-SNAPSHOT`
 
-To use this version in other projects,
-you can publish it locally to mavenLocal,
-and then use latest snapshot version like `7.0.0-SNAPSHOT` as version: 
+### Publish to Maven Local
+
+For checking out local changes in Korge and test them in your own applications you can publish
+Korge to maven local:
 
 ```shell script
 ./gradlew publishToMavenLocal
 ```
 
-If you want to make changes and easily try things.
-You can run the `korge-sandbox` module that runs
-the `src/commonMain/kotlin/Main.kt` file;
-you can make experiments there:
+If you want to make changes and easily try things out without releasing locally, you can check
+the `korge-sandbox` module that runs `shared/src/commonMain/kotlin/org/korge/application/Main.kt`
+file. Make your experiments there:
 
 ```shell script
 ./gradlew :korge-sandbox:runJvm
@@ -89,6 +93,9 @@ you can make experiments there:
 ```
 
 ## KorGE Store
+
+[Deprecated] Korge Store will be discontinued in Korge release 7. Source code additions to Korge can
+be added as Gradle submodule in the context of Kotlin Multiplatform.
 
 Traditionally all the KorGE modules were published to central and their source code was available here,
 now they are available via kproject in separate repositories.
