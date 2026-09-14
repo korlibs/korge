@@ -30,26 +30,17 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 
 fun Project.configureNativeIos(projectType: ProjectType) {
-    configureNativeIosTarget(projectType, "ios")
-
-    this.project.kotlin.apply {
-        iosArm64()
-        iosX64()
-        iosSimulatorArm64()
-    }
+    configureNativeIosTarget(projectType)
 }
 
 val Project.xcframework by projectExtension() {
     XCFramework()
 }
 
-fun Project.configureNativeIosTarget(projectType: ProjectType, targetName: String) {
-    val targetNameCapitalized = targetName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-    
-    val platformNativeFolderName = "platforms/native-$targetName"
-    val platformNativeFolder = File(buildDir, platformNativeFolderName)
-    
-	val prepareKotlinNativeBootstrapIos = tasks.createThis<Task>("prepareKotlinNativeBootstrap${targetNameCapitalized}") {
+fun Project.configureNativeIosTarget(projectType: ProjectType) {
+    val platformNativeFolder = File(buildDir, "platforms/native-ios")
+
+	val prepareKotlinNativeBootstrapIos = tasks.createThis<Task>("prepareKotlinNativeBootstrapIos") {
         doLast {
             File(platformNativeFolder, "bootstrap.kt").apply {
                 parentFile.mkdirs()
@@ -58,13 +49,10 @@ fun Project.configureNativeIosTarget(projectType: ProjectType, targetName: Strin
         }
     }
 
-    val iosTargets = when (targetName) {
-        "ios" -> listOf(kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosSimulatorArm64())
-        else -> TODO()
-    }
+    val iosTargets = listOf(kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosSimulatorArm64())
 
 	kotlin.apply {
-        val xcf = XCFramework("$targetName")
+        val xcf = XCFramework("ios")
 
         for (target in iosTargets) {
             target.configureKotlinNativeTarget(project)
@@ -82,7 +70,7 @@ fun Project.configureNativeIosTarget(projectType: ProjectType, targetName: Strin
                         afterEvaluate {
                             for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
                                 compilation.getCompileTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn(prepareKotlinNativeBootstrapIos)
-                                compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn("prepareKotlinNative${targetNameCapitalized}Project")
+                                compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn("prepareKotlinNativeIosProject")
                             }
                         }
                     }
@@ -92,38 +80,35 @@ fun Project.configureNativeIosTarget(projectType: ProjectType, targetName: Strin
 	}
 
     if (projectType.isExecutable) {
-        configureNativeIosTargetRun(targetName)
+        configureNativeIosRun()
     }
 }
 
-fun Project.configureNativeIosTargetRun(targetName: String) {
-    val targetNameCapitalized = targetName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-
+fun Project.configureNativeIosRun() {
     val iosXcodegenExt = project.iosXcodegenExt
     val iosSdkExt = project.iosSdkExt
 
     val combinedResourcesFolder = File(buildDir, "combinedResources/resources")
-    val processedResourcesFolder = File(buildDir, "processedResources/${targetName}Arm64/main")
-    val copyIosResources = tasks.createTyped<Copy>("copy${targetNameCapitalized}Resources") {
-        val processResourcesTaskName = getProcessResourcesTaskName("${targetName}Arm64", "main")
+    val processedResourcesFolder = File(buildDir, "processedResources/iosArm64/main")
+    val copyIosResources = tasks.createTyped<Copy>("copyIosResources") {
+        val processResourcesTaskName = getProcessResourcesTaskName("iosArm64", "main")
         dependsOn(processResourcesTaskName)
         from(processedResourcesFolder)
         into(combinedResourcesFolder)
     }
 
-    val prepareKotlinNativeIosProject = tasks.createThis<Task>("prepareKotlinNative${targetNameCapitalized}Project") {
-        dependsOn("prepareKotlinNativeBootstrap${targetNameCapitalized}", prepareKotlinNativeBootstrap, copyIosResources)
+    val prepareKotlinNativeIosProject = tasks.createThis<Task>("prepareKotlinNativeIosProject") {
+        dependsOn("prepareKotlinNativeBootstrapIos", prepareKotlinNativeBootstrap, copyIosResources)
         doLast {
-            val folder = File(buildDir, "platforms/$targetName")
-            IosProjectTools.prepareKotlinNativeIosProject(folder, targetName)
+            val folder = File(buildDir, "platforms/ios")
+            IosProjectTools.prepareKotlinNativeIosProject(folder)
             IosProjectTools.prepareKotlinNativeIosProjectIcons(folder) { korge.getIconBytes(it) }
             IosProjectTools.prepareKotlinNativeIosProjectYml(
                 folder,
                 id = korge.id,
                 name = korge.name,
                 team = korge.iosDevelopmentTeam ?: korge.appleDevelopmentTeamId ?: iosSdkExt.appleGetDefaultDeveloperCertificateTeamId(),
-                combinedResourcesFolder = combinedResourcesFolder,
-                targetName = targetName
+                combinedResourcesFolder = combinedResourcesFolder
             )
 
             execLogger {
@@ -133,7 +118,7 @@ fun Project.configureNativeIosTargetRun(targetName: String) {
         }
     }
 
-    tasks.createThis<Task>("${targetName}ShutdownSimulator") {
+    tasks.createThis<Task>("iosShutdownSimulator") {
         doFirst {
             execLogger { it.commandLine("xcrun", "simctl", "shutdown", "booted") }
         }
@@ -141,7 +126,7 @@ fun Project.configureNativeIosTargetRun(targetName: String) {
 
     val iphoneVersion = korge.preferredIphoneSimulatorVersion
 
-    val iosCreateIphone = tasks.createThis<Task>("${targetName}CreateIphone") {
+    val iosCreateIphone = tasks.createThis<Task>("iosCreateIphone") {
         onlyIf { iosSdkExt.appleGetDevices().none { it.name == "iPhone $iphoneVersion" } }
         doFirst {
             val result = execOutput("xcrun", "simctl", "list")
@@ -152,7 +137,7 @@ fun Project.configureNativeIosTargetRun(targetName: String) {
         }
     }
 
-    tasks.createThis<Task>("${targetName}BootSimulator") {
+    tasks.createThis<Task>("iosBootSimulator") {
         onlyIf { iosSdkExt.appleGetBootedDevice() == null }
         dependsOn(iosCreateIphone)
         doLast {
@@ -199,10 +184,10 @@ fun Project.configureNativeIosTargetRun(targetName: String) {
                 else -> "arm64"
             }
             val sdkName = if (simulator) "iphonesimulator" else "iphoneos"
-            tasks.createThis<Exec>("${targetName}Build$simulatorSuffix$debugSuffix") {
-                val linkTaskName = "link${debugSuffix}Framework${targetNameCapitalized}$arch"
+            tasks.createThis<Exec>("iosBuild$simulatorSuffix$debugSuffix") {
+                val linkTaskName = "link${debugSuffix}FrameworkIos$arch"
                 dependsOn(prepareKotlinNativeIosProject, linkTaskName)
-                val xcodeProjDir = buildDir["platforms/$targetName/app.xcodeproj"]
+                val xcodeProjDir = buildDir["platforms/ios/app.xcodeproj"]
                 afterEvaluate {
                     val linkTask: KotlinNativeLink = tasks.findByName(linkTaskName) as KotlinNativeLink
                     inputs.dir(linkTask.outputFile)
@@ -217,11 +202,11 @@ fun Project.configureNativeIosTargetRun(targetName: String) {
         }
 
 
-        val installIosSimulator = tasks.createThis<Task>("install${targetNameCapitalized}Simulator$debugSuffix") {
-            val buildTaskName = "${targetName}BuildSimulator$debugSuffix"
+        val installIosSimulator = tasks.createThis<Task>("installIosSimulator$debugSuffix") {
+            val buildTaskName = "iosBuildSimulator$debugSuffix"
             group = GROUP_KORGE_INSTALL
 
-            dependsOn(buildTaskName, "${targetName}BootSimulator")
+            dependsOn(buildTaskName, "iosBootSimulator")
             doLast {
                 val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
                 val device = iosSdkExt.appleGetInstallDevice(iphoneVersion)
@@ -230,15 +215,15 @@ fun Project.configureNativeIosTargetRun(targetName: String) {
         }
 
         for (Kind in listOf("Simulator", "Device")) {
-            val packageIos = tasks.createThis<Task>("package${targetNameCapitalized}$Kind$debugSuffix") {
+            val packageIos = tasks.createThis<Task>("packageIos$Kind$debugSuffix") {
                 group = GROUP_KORGE_PACKAGE
-                dependsOn("${targetName}Build$Kind$debugSuffix")
+                dependsOn("iosBuild$Kind$debugSuffix")
             }
         }
 
-        val installIosDevice = tasks.createThis<Task>("install${targetNameCapitalized}Device$debugSuffix") {
+        val installIosDevice = tasks.createThis<Task>("installIosDevice$debugSuffix") {
             group = GROUP_KORGE_INSTALL
-            val buildTaskName = "${targetName}BuildDevice$debugSuffix"
+            val buildTaskName = "iosBuildDevice$debugSuffix"
             dependsOn(installIosDeploy, buildTaskName)
             doLast {
                 val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
@@ -246,9 +231,9 @@ fun Project.configureNativeIosTargetRun(targetName: String) {
             }
         }
 
-        val runIosDevice = tasks.createTyped<Exec>("run${targetNameCapitalized}Device$debugSuffix") {
+        val runIosDevice = tasks.createTyped<Exec>("runIosDevice$debugSuffix") {
             group = GROUP_KORGE_RUN
-            val buildTaskName = "${targetName}BuildDevice$debugSuffix"
+            val buildTaskName = "iosBuildDevice$debugSuffix"
             dependsOn(installIosDeploy, buildTaskName)
             doFirst {
                 val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
@@ -256,7 +241,7 @@ fun Project.configureNativeIosTargetRun(targetName: String) {
             }
         }
 
-        val runIosSimulator = tasks.createTyped<Exec>("run${targetNameCapitalized}Simulator$debugSuffix") {
+        val runIosSimulator = tasks.createTyped<Exec>("runIosSimulator$debugSuffix") {
             group = GROUP_KORGE_RUN
             dependsOn(installIosSimulator)
             doFirst {
@@ -268,12 +253,12 @@ fun Project.configureNativeIosTargetRun(targetName: String) {
             }
         }
 
-        tasks.createTyped<Task>("run${targetNameCapitalized}$debugSuffix") {
+        tasks.createTyped<Task>("runIos$debugSuffix") {
             dependsOn(runIosDevice)
         }
     }
 
-    tasks.createThis<Task>("${targetName}EraseAllSimulators") {
+    tasks.createThis<Task>("iosEraseAllSimulators") {
         doLast { execLogger { it.commandLine("osascript", "-e", "tell application \"iOS Simulator\" to quit") } }
         doLast { execLogger { it.commandLine("osascript", "-e", "tell application \"Simulator\" to quit") } }
         doLast { execLogger { it.commandLine("xcrun", "simctl", "erase", "all") } }

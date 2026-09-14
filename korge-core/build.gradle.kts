@@ -84,11 +84,6 @@ kotlin {
         androidMain {
             dependsOn(jvmAndAndroidMain)
         }
-
-        iosMain {
-            dependsOn(appleMain.get())
-        }
-        
     }
 }
 

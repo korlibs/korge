@@ -79,11 +79,6 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.swing)
             }
         }
-
-        iosMain {
-            dependsOn(appleMain.get())
-        }
-
     }
 }
 
