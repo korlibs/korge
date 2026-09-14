@@ -53,17 +53,14 @@ object IosProjectTools {
     fun genLaunchScreenStoryboard(targetName: String): String {
         val documentType = when (targetName) {
             "ios" -> "com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB"
-            "tvos" -> "com.apple.InterfaceBuilder.AppleTV.Storyboard"
             else -> TODO()
         }
         val targetRuntime = when (targetName) {
             "ios" -> "iOS.CocoaTouch"
-            "tvos" -> "AppleTV"
             else -> TODO()
         }
         val (sizeWidth, sizeHeight) = when (targetName) {
             "ios" -> 375 to 667
-            "tvos" -> 1920 to 1000
             else -> TODO()
         }
 
@@ -248,7 +245,7 @@ object IosProjectTools {
                     for (arch in listOf("X64", "SimulatorArm64", "Arm64")) {
                         line("app-$arch-$debugSuffix:")
                         indent {
-                            line("platform: ${if (targetName == "ios") "iOS" else "tvOS"}")
+                            line("platform: iOS")
                             line("type: application")
                             line("deploymentTarget: \"15.0\"")
                             line("sources:")

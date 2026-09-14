@@ -3,7 +3,7 @@ package korlibs.render
 import platform.GLKit.*
 import platform.UIKit.*
 
-actual val iosTvosTools: IosTvosToolsImpl = object : IosTvosToolsImpl() {
+val iosTools: IosToolsImpl = object : IosToolsImpl() {
     val uiSelectionFeedbackGenerator by lazy { UISelectionFeedbackGenerator() }
     val uiImpactFeedbackGenerator by lazy { UIImpactFeedbackGenerator() }
 

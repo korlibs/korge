@@ -53,12 +53,6 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     iosX64()
-    tvosArm64()
-    tvosSimulatorArm64()
-    watchosArm64()
-    watchosArm32()
-    watchosDeviceArm64()
-    watchosSimulatorArm64()
     macosArm64()
     // TODO Add support for these targets as well
 //    linuxX64()
@@ -86,17 +80,10 @@ kotlin {
             }
         }
 
-        val iosTvosMain by creating {
+        iosMain {
             dependsOn(appleMain.get())
         }
 
-        iosMain {
-            dependsOn(iosTvosMain)
-        }
-
-        tvosMain {
-            dependsOn(iosTvosMain)
-        }
     }
 }
 
@@ -111,12 +98,7 @@ val appleTestTargets = listOf(
     "iosSimulatorArm64",
     "iosArm64",
     "iosX64",
-    "tvosSimulatorArm64",
-    "tvosArm64",
-    "tvosX64",
     "macosArm64",
-    "watchosSimulatorArm64",
-    "watchosArm64",
 )
 
 // For all apple test targets configure the test task to copy the resources from

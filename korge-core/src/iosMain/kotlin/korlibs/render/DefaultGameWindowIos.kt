@@ -23,9 +23,7 @@ import platform.GameController.*
 import platform.UIKit.*
 import platform.darwin.*
 
-expect val iosTvosTools: IosTvosToolsImpl
-
-open class IosTvosToolsImpl {
+open class IosToolsImpl {
     open fun applicationDidFinishLaunching(app: UIApplication, window: UIWindow) {
         //window?.windowScene = windowScene
     }
@@ -59,7 +57,7 @@ abstract class KorgwBaseNewAppDelegate {
         viewController = ViewController { entry() }
         window.rootViewController = viewController
         window.makeKeyAndVisible()
-        iosTvosTools.applicationDidFinishLaunching(app, window)
+        iosTools.applicationDidFinishLaunching(app, window)
     }
 
     fun applicationDidEnterBackground(app: UIApplication) {
@@ -218,7 +216,7 @@ class MyGLKViewController(
 
     override fun viewDidLoad() {
         val view = this.view as? GLKView?
-        iosTvosTools.viewDidLoad(view)
+        iosTools.viewDidLoad(view)
         view?.drawableDepthFormat = GLKViewDrawableDepthFormat24
         view?.drawableStencilFormat = GLKViewDrawableStencilFormat8
         view?.context = EAGLContext(kEAGLRenderingAPIOpenGLES2)
@@ -654,7 +652,7 @@ open class IosGameWindow(
 
     override val hapticFeedbackGenerateSupport: Boolean get() = true
     override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
-        iosTvosTools.hapticFeedbackGenerate(kind)
+        iosTools.hapticFeedbackGenerate(kind)
     }
 }
 

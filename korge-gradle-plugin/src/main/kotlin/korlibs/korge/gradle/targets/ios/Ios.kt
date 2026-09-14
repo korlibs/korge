@@ -30,15 +30,12 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 
 fun Project.configureNativeIos(projectType: ProjectType) {
-    configureNativeIosTvos(projectType, "ios")
-    configureNativeIosTvos(projectType, "tvos")
+    configureNativeIosTarget(projectType, "ios")
 
     this.project.kotlin.apply {
         iosArm64()
         iosX64()
         iosSimulatorArm64()
-        tvosArm64()
-        tvosSimulatorArm64()
     }
 }
 
@@ -46,13 +43,13 @@ val Project.xcframework by projectExtension() {
     XCFramework()
 }
 
-fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String) {
+fun Project.configureNativeIosTarget(projectType: ProjectType, targetName: String) {
     val targetNameCapitalized = targetName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
     
     val platformNativeFolderName = "platforms/native-$targetName"
     val platformNativeFolder = File(buildDir, platformNativeFolderName)
     
-	val prepareKotlinNativeBootstrapIosTvos = tasks.createThis<Task>("prepareKotlinNativeBootstrap${targetNameCapitalized}") {
+	val prepareKotlinNativeBootstrapIos = tasks.createThis<Task>("prepareKotlinNativeBootstrap${targetNameCapitalized}") {
         doLast {
             File(platformNativeFolder, "bootstrap.kt").apply {
                 parentFile.mkdirs()
@@ -61,16 +58,15 @@ fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String)
         }
     }
 
-    val iosTvosTargets = when (targetName) {
+    val iosTargets = when (targetName) {
         "ios" -> listOf(kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosSimulatorArm64())
-        "tvos" -> listOf(kotlin.tvosArm64(), kotlin.tvosSimulatorArm64())
         else -> TODO()
     }
 
 	kotlin.apply {
         val xcf = XCFramework("$targetName")
 
-        for (target in iosTvosTargets) {
+        for (target in iosTargets) {
             target.configureKotlinNativeTarget(project)
 			target.also { target ->
 				target.binaries {
@@ -85,7 +81,7 @@ fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String)
                     if (projectType.isExecutable) {
                         afterEvaluate {
                             for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-                                compilation.getCompileTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn(prepareKotlinNativeBootstrapIosTvos)
+                                compilation.getCompileTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn(prepareKotlinNativeBootstrapIos)
                                 compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn("prepareKotlinNative${targetNameCapitalized}Project")
                             }
                         }
@@ -96,11 +92,11 @@ fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String)
 	}
 
     if (projectType.isExecutable) {
-        configureNativeIosTvosRun(targetName)
+        configureNativeIosTargetRun(targetName)
     }
 }
 
-fun Project.configureNativeIosTvosRun(targetName: String) {
+fun Project.configureNativeIosTargetRun(targetName: String) {
     val targetNameCapitalized = targetName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 
     val iosXcodegenExt = project.iosXcodegenExt
@@ -108,15 +104,15 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
 
     val combinedResourcesFolder = File(buildDir, "combinedResources/resources")
     val processedResourcesFolder = File(buildDir, "processedResources/${targetName}Arm64/main")
-    val copyIosTvosResources = tasks.createTyped<Copy>("copy${targetNameCapitalized}Resources") {
+    val copyIosResources = tasks.createTyped<Copy>("copy${targetNameCapitalized}Resources") {
         val processResourcesTaskName = getProcessResourcesTaskName("${targetName}Arm64", "main")
         dependsOn(processResourcesTaskName)
         from(processedResourcesFolder)
         into(combinedResourcesFolder)
     }
 
-    val prepareKotlinNativeIosTvosProject = tasks.createThis<Task>("prepareKotlinNative${targetNameCapitalized}Project") {
-        dependsOn("prepareKotlinNativeBootstrap${targetNameCapitalized}", prepareKotlinNativeBootstrap, copyIosTvosResources)
+    val prepareKotlinNativeIosProject = tasks.createThis<Task>("prepareKotlinNative${targetNameCapitalized}Project") {
+        dependsOn("prepareKotlinNativeBootstrap${targetNameCapitalized}", prepareKotlinNativeBootstrap, copyIosResources)
         doLast {
             val folder = File(buildDir, "platforms/$targetName")
             IosProjectTools.prepareKotlinNativeIosProject(folder, targetName)
@@ -173,16 +169,16 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
         }
     }
 
-    val installIosTvosDeploy = tasks.findByName("installIosDeploy") ?: tasks.createThis<Task>("installIosDeploy") {
-        onlyIf { !iosTvosDeployExt.isInstalled }
+    val installIosDeploy = tasks.findByName("installIosDeploy") ?: tasks.createThis<Task>("installIosDeploy") {
+        onlyIf { !iosDeployExt.isInstalled }
         doFirst {
-            iosTvosDeployExt.installIfRequired()
+            iosDeployExt.installIfRequired()
         }
     }
 
-    val updateIosTvosDeploy = tasks.findByName("updateIosDeploy") ?: tasks.createThis<Task>("updateIosDeploy") {
+    val updateIosDeploy = tasks.findByName("updateIosDeploy") ?: tasks.createThis<Task>("updateIosDeploy") {
         doFirst {
-            iosTvosDeployExt.update()
+            iosDeployExt.update()
         }
     }
 
@@ -205,7 +201,7 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
             val sdkName = if (simulator) "iphonesimulator" else "iphoneos"
             tasks.createThis<Exec>("${targetName}Build$simulatorSuffix$debugSuffix") {
                 val linkTaskName = "link${debugSuffix}Framework${targetNameCapitalized}$arch"
-                dependsOn(prepareKotlinNativeIosTvosProject, linkTaskName)
+                dependsOn(prepareKotlinNativeIosProject, linkTaskName)
                 val xcodeProjDir = buildDir["platforms/$targetName/app.xcodeproj"]
                 afterEvaluate {
                     val linkTask: KotlinNativeLink = tasks.findByName(linkTaskName) as KotlinNativeLink
@@ -240,23 +236,23 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
             }
         }
 
-        val installIosTvosDevice = tasks.createThis<Task>("install${targetNameCapitalized}Device$debugSuffix") {
+        val installIosDevice = tasks.createThis<Task>("install${targetNameCapitalized}Device$debugSuffix") {
             group = GROUP_KORGE_INSTALL
             val buildTaskName = "${targetName}BuildDevice$debugSuffix"
-            dependsOn(installIosTvosDeploy, buildTaskName)
+            dependsOn(installIosDeploy, buildTaskName)
             doLast {
                 val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-                iosTvosDeployExt.install(appFolder.absolutePath)
+                iosDeployExt.install(appFolder.absolutePath)
             }
         }
 
         val runIosDevice = tasks.createTyped<Exec>("run${targetNameCapitalized}Device$debugSuffix") {
             group = GROUP_KORGE_RUN
             val buildTaskName = "${targetName}BuildDevice$debugSuffix"
-            dependsOn(installIosTvosDeploy, buildTaskName)
+            dependsOn(installIosDeploy, buildTaskName)
             doFirst {
                 val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-                iosTvosDeployExt.installAndRun(appFolder.absolutePath)
+                iosDeployExt.installAndRun(appFolder.absolutePath)
             }
         }
 
