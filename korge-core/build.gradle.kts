@@ -51,13 +51,7 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     iosX64()
-    tvosArm64()
-    tvosSimulatorArm64()
     macosArm64()
-    watchosArm64()
-    watchosArm32()
-    watchosDeviceArm64()
-    watchosSimulatorArm64()
     // TODO Add support for these targets as well
 //    linuxX64()
 //    linuxArm64()
@@ -89,18 +83,6 @@ kotlin {
 
         androidMain {
             dependsOn(jvmAndAndroidMain)
-        }
-
-        val iosTvosMain by creating {
-            dependsOn(appleMain.get())
-        }
-
-        iosMain {
-            dependsOn(iosTvosMain)
-        }
-
-        tvosMain {
-            dependsOn(iosTvosMain)
         }
     }
 }

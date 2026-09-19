@@ -50,22 +50,10 @@ object IosProjectTools {
         @end
     """.trimIndent()
 
-    fun genLaunchScreenStoryboard(targetName: String): String {
-        val documentType = when (targetName) {
-            "ios" -> "com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB"
-            "tvos" -> "com.apple.InterfaceBuilder.AppleTV.Storyboard"
-            else -> TODO()
-        }
-        val targetRuntime = when (targetName) {
-            "ios" -> "iOS.CocoaTouch"
-            "tvos" -> "AppleTV"
-            else -> TODO()
-        }
-        val (sizeWidth, sizeHeight) = when (targetName) {
-            "ios" -> 375 to 667
-            "tvos" -> 1920 to 1000
-            else -> TODO()
-        }
+    fun genLaunchScreenStoryboard(): String {
+        val documentType = "com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB"
+        val targetRuntime = "iOS.CocoaTouch"
+        val (sizeWidth, sizeHeight) = 375 to 667
 
         return """
         <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -96,9 +84,9 @@ object IosProjectTools {
     """.trimIndent()
     }
 
-    fun prepareKotlinNativeIosProject(folder: File, targetName: String) {
+    fun prepareKotlinNativeIosProject(folder: File) {
         folder["app/main.m"].ensureParents().writeText(genMainObjC())
-        folder["app/Base.lproj/LaunchScreen.storyboard"].ensureParents().writeText(genLaunchScreenStoryboard(targetName))
+        folder["app/Base.lproj/LaunchScreen.storyboard"].ensureParents().writeText(genLaunchScreenStoryboard())
         folder["app/Assets.xcassets/Contents.json"].ensureParents().writeText("""
             {
               "info" : {
@@ -221,11 +209,8 @@ object IosProjectTools {
         id: String,
         name: String,
         team: String?,
-        combinedResourcesFolder: File,
-        targetName: String
+        combinedResourcesFolder: File
     ) {
-        val targetNameCapitalized = targetName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-
         folder["project.yml"].ensureParents().writeText(Indenter {
             line("name: app")
             line("options:")
@@ -248,7 +233,7 @@ object IosProjectTools {
                     for (arch in listOf("X64", "SimulatorArm64", "Arm64")) {
                         line("app-$arch-$debugSuffix:")
                         indent {
-                            line("platform: ${if (targetName == "ios") "iOS" else "tvOS"}")
+                            line("platform: iOS")
                             line("type: application")
                             line("deploymentTarget: \"15.0\"")
                             line("sources:")
@@ -277,7 +262,7 @@ object IosProjectTools {
                                 line("  DEVELOPMENT_TEAM: $team")
                             }
                             line("dependencies:")
-                            line("  - framework: ../../bin/${targetName}$arch/${debugSuffix.lowercase()}Framework/GameMain.framework")
+                            line("  - framework: ../../bin/ios$arch/${debugSuffix.lowercase()}Framework/GameMain.framework")
                         }
                     }
                 }
