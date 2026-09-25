@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:allowBackup="false"
-        android:label="Korge Sandbox"
+        android:label="Animora Studio"
+        android:icon="@drawable/ic_animora"
         android:supportsRtl="true">
         <activity
             android:name="org.korge.application.MainActivity"
