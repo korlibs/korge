@@ -8,7 +8,6 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 val Project.doEnableKotlinAndroid: Boolean get() = rootProject.findProperty("enableKotlinAndroid") == "true" && System.getenv("DISABLE_KOTLIN_ANDROID") != "true"
 val Project.doEnableKotlinMobile: Boolean get() = supportKotlinNative && rootProject.findProperty("enableKotlinMobile") == "true"
-val Project.doEnableKotlinMobileTvos: Boolean get() = doEnableKotlinMobile && rootProject.findProperty("enableKotlinMobileTvos") == "true"
 
 val Project.hasAndroid get() = extensions.findByName("android") != null
 
@@ -27,9 +26,6 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mob
 
     val out = arrayListOf<KotlinNativeTarget>()
     out.addAll(listOf(iosArm64(), iosX64(), iosSimulatorArm64()))
-    if (project.doEnableKotlinMobileTvos) {
-        out.addAll(listOf(tvosArm64(), tvosSimulatorArm64()))
-    }
     return out
 }
 

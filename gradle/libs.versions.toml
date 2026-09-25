@@ -58,7 +58,6 @@ korlibs-template = { module = "org.korge.korlibs:korlibs-template", version.ref 
 korlibs-time = { module = "org.korge.korlibs:korlibs-time", version.ref = "korlibs" }
 korlibs-serialization = { module = "org.korge.korlibs:korlibs-serialization", version.ref = "korlibs" }
 korlibs-datastructure = { module = "org.korge.korlibs:korlibs-datastructure", version.ref = "korlibs" }
-korlibs-datastructure-core = { module = "org.korge.korlibs:korlibs-datastructure-core", version.ref = "korlibs" }
 korlibs-memory = { module = "org.korge.korlibs:korlibs-memory", version.ref = "korlibs" }
 korlibs-io = { module = "org.korge.korlibs:korlibs-io", version.ref = "korlibs" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
@@ -88,4 +87,4 @@ jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit" }
 
 [bundles]
 kotlin-test = ["junit", "kotlin-test", "kotlin-test-junit"]
-korlibs-all = ["korlibs-audio", "korlibs-image", "korlibs-inject", "korlibs-template", "korlibs-time", "korlibs-serialization", "korlibs-datastructure", "korlibs-datastructure-core", "korlibs-memory", "korlibs-io"]
+korlibs-all = ["korlibs-audio", "korlibs-image", "korlibs-inject", "korlibs-template", "korlibs-time", "korlibs-serialization", "korlibs-datastructure", "korlibs-memory", "korlibs-io"]

@@ -5,7 +5,7 @@ import korlibs.korge.gradle.util.execLogger
 import korlibs.korge.gradle.util.projectExtension
 import org.gradle.api.Project
 
-val Project.iosTvosDeployExt by projectExtension {
+val Project.iosDeployExt by projectExtension {
     IosDeploy(this)
 }
 
