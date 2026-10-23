@@ -17,7 +17,6 @@ import korlibs.korge.gradle.targets.native.getLinkTask
 import korlibs.korge.gradle.util.createThis
 import korlibs.korge.gradle.util.createTyped
 import korlibs.korge.gradle.util.execLogger
-import korlibs.korge.gradle.util.execOutput
 import korlibs.korge.gradle.util.get
 import korlibs.korge.gradle.util.projectExtension
 import org.gradle.api.Project
@@ -127,13 +126,16 @@ fun Project.configureNativeIosRun() {
     val iphoneVersion = korge.preferredIphoneSimulatorVersion
 
     val iosCreateIphone = tasks.createThis<Task>("iosCreateIphone") {
-        onlyIf { iosSdkExt.appleGetDevices().none { it.name == "iPhone $iphoneVersion" } }
+        // Same rule as appleGetBootDevice: only create when no available iPhone simulator exists at all
+        onlyIf {
+            val existing = IosSimulators.selectIphone(iosSdkExt.appleGetDevices().filter { it.isAvailable }, iphoneVersion)
+            if (existing != null) logger.info("Using existing simulator ${existing.name} (${existing.udid}, ${existing.runtime})")
+            existing == null
+        }
         doFirst {
-            val result = execOutput("xcrun", "simctl", "list")
-            val regex = Regex("com\\.apple\\.CoreSimulator\\.SimRuntime\\.iOS[\\w\\-]+")
-            val simRuntime = regex.find(result)?.value ?: error("Can't find SimRuntime. exec: xcrun simctl list")
-            logger.info("simRuntime: $simRuntime")
-            execLogger { it.commandLine("xcrun", "simctl", "create", "iPhone $iphoneVersion", "com.apple.CoreSimulator.SimDeviceType.iPhone-$iphoneVersion", simRuntime) }
+            val plan = IosSimulators.planIphoneCreation(iosSdkExt.appleGetRuntimes(), iphoneVersion)
+            logger.lifecycle("Creating simulator '${plan.deviceType.name}' (${plan.deviceType.identifier}) on ${plan.runtime.identifier}: ${plan.reason}")
+            execLogger { it.commandLine("xcrun", "simctl", "create", plan.deviceType.name, plan.deviceType.identifier, plan.runtime.identifier) }
         }
     }
 

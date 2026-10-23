@@ -1,0 +1,92 @@
+{
+  "devices": {
+    "com.apple.CoreSimulator.SimRuntime.iOS-27-1": [
+      {
+        "name": "iPhone Duo",
+        "udid": "E1C0EB0B-02A1-46B2-B640-CAAAB1290D2B",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-Duo"
+      }
+    ],
+    "com.apple.CoreSimulator.SimRuntime.iOS-27-0": [
+      {
+        "name": "iPhone 18 Pro",
+        "udid": "0BAA7FE5-98A7-40A0-B56C-FA6FB93961D0",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro"
+      },
+      {
+        "name": "iPhone 18 Pro Max",
+        "udid": "CBE1AE7B-B10A-4D46-8C56-760F04B7CFA7",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro-Max"
+      },
+      {
+        "name": "iPhone 17e",
+        "udid": "E75E1E1E-C8A3-423D-B879-F9DBD7754315",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17e"
+      },
+      {
+        "name": "iPhone Air",
+        "udid": "6CA64859-3A5F-448F-8C61-E90764E5F974",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-Air"
+      },
+      {
+        "name": "iPhone 17",
+        "udid": "516EAFD1-B0E2-48FF-80E6-71CB68F5813A",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17"
+      },
+      {
+        "name": "iPad Pro 13-inch (M5)",
+        "udid": "C624F6F0-4310-4EB5-8F2F-003153A1EC13",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB"
+      },
+      {
+        "name": "iPad Pro 11-inch (M5)",
+        "udid": "55D9B1BC-115D-4329-9587-F3CC9C83A534",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M5-12GB"
+      },
+      {
+        "name": "iPad mini (A17 Pro)",
+        "udid": "71E8AC03-C229-4265-9E12-CEA3A268AE82",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro"
+      },
+      {
+        "name": "iPad Air 13-inch (M4)",
+        "udid": "793D1B6F-BD8A-4D73-B6DD-C26DEBC14DAB",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-13-inch-M4"
+      },
+      {
+        "name": "iPad Air 11-inch (M4)",
+        "udid": "CA5C1830-980C-47B6-B05D-EE50862BA686",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-11-inch-M4"
+      },
+      {
+        "name": "iPad (A16)",
+        "udid": "D33E9DE8-743C-4F83-9EEC-A63B71291FD9",
+        "state": "Shutdown",
+        "isAvailable": true,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-A16"
+      }
+    ]
+  }
+}
