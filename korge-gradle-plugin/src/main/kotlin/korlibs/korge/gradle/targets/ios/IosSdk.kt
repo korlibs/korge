@@ -6,8 +6,6 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.Base64
 import javax.security.auth.x500.X500Principal
-import korlibs.korge.gradle.util.Json
-import korlibs.korge.gradle.util.dyn
 import korlibs.korge.gradle.util.execOutput
 import korlibs.korge.gradle.util.projectExtension
 import org.gradle.api.Project
@@ -19,8 +17,7 @@ val Project.iosSdkExt by projectExtension {
 class IosSdk(val project: Project) {
     fun appleGetBootDevice(iphoneVersion: Int): IosDevice {
         val devices = appleGetDevices()
-        return devices.firstOrNull { it.name == "iPhone $iphoneVersion" && it.isAvailable }
-            ?: devices.firstOrNull { it.name.contains("iPhone") && it.isAvailable }
+        return IosSimulators.selectIphone(devices.filter { it.isAvailable }, iphoneVersion)
             ?: run {
                 val errorMessage = "Can't find suitable available iPhone $iphoneVersion device"
                 project.logger.info(errorMessage)
@@ -31,8 +28,7 @@ class IosSdk(val project: Project) {
 
     fun appleGetInstallDevice(iphoneVersion: Int): IosDevice {
         val devices = appleGetDevices()
-        return devices.firstOrNull { it.name == "iPhone $iphoneVersion" && it.booted }
-            ?: devices.firstOrNull { it.name.contains("iPhone") && it.booted }
+        return IosSimulators.selectIphone(devices.filter { it.booted }, iphoneVersion)
             ?: error("Can't find suitable booted iPhone $iphoneVersion device")
     }
 
@@ -41,7 +37,8 @@ class IosSdk(val project: Project) {
     fun appleFindIphoneSimSdk(): String = appleFindSdk("iphonesimulator")
     fun appleFindIphoneOsSdk(): String = appleFindSdk("iphoneos")
 
-    data class IosDevice(val booted: Boolean, val isAvailable: Boolean, val name: String, val udid: String)
+    /** [runtime] is the simctl runtime identifier the device belongs to, e.g. `com.apple.CoreSimulator.SimRuntime.iOS-27-0`. */
+    data class IosDevice(val booted: Boolean, val isAvailable: Boolean, val name: String, val udid: String, val runtime: String = "")
 
     // https://gist.github.com/luckman212/ec52e9291f27bc39c2eecee07e7a9aa7
     fun appleGetDefaultDeveloperCertificateTeamId(): String? {
@@ -75,13 +72,9 @@ class IosSdk(val project: Project) {
         return teamId
     }
 
-    fun appleGetDevices(os: String = "iOS"): List<IosDevice> {
-        val res = Json.parse(project.execOutput("xcrun", "simctl", "list", "-j", "devices")).dyn
-        val devices = res["devices"]
-        val oses = devices.keys.map { it.str }
-        val iosOses = oses.filter { it.contains(os) }
-        return iosOses.map { devices[it].list }.flatten().map {
-            IosDevice(it["state"].str == "Booted", it["isAvailable"].bool, it["name"].str, it["udid"].str)
-        }
-    }
+    fun appleGetDevices(os: String = "iOS"): List<IosDevice> =
+        IosSimulators.parseDevices(project.execOutput("xcrun", "simctl", "list", "-j", "devices"), os)
+
+    fun appleGetRuntimes(): List<IosSimulators.Runtime> =
+        IosSimulators.parseRuntimes(project.execOutput("xcrun", "simctl", "list", "-j", "runtimes"))
 }

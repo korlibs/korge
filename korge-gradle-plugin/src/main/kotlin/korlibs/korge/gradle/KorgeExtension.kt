@@ -337,7 +337,14 @@ open class KorgeExtension(@Inject val project: Project) {
         }
     var versionCode: Int = 1
 	var version: String = "0.0.1"
-    var preferredIphoneSimulatorVersion: Int = 8
+    /**
+     * iPhone model number to prefer for the iOS simulator tasks (`17` means "iPhone 17").
+     *
+     * This is a preference, not a requirement: an existing "iPhone <version>" simulator is used when available,
+     * otherwise any available iPhone simulator. A new simulator is only created when none exists: this model on the
+     * newest iOS runtime that supports it, or, if no runtime does, the newest iPhone model of the newest runtime.
+     */
+    var preferredIphoneSimulatorVersion: Int = 17
 
 	var exeBaseName: String = "app"
 
