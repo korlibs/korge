@@ -20,6 +20,9 @@ object IosProjectTools {
         #import <GameMain/GameMain.h>
 
         @interface AppDelegate : UIResponder <UIApplicationDelegate>
+        @end
+
+        @interface SceneDelegate : UIResponder <UIWindowSceneDelegate>
         @property (strong, nonatomic) UIWindow *window;
         @end
 
@@ -29,23 +32,48 @@ object IosProjectTools {
 
         @implementation AppDelegate
         - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-            [[GameMainNewAppDelegate getNewAppDelegate] applicationDidFinishLaunchingApp: application];
             return YES;
         }
-        - (void)applicationWillResignActive:(UIApplication *)application {
-            [[GameMainNewAppDelegate getNewAppDelegate] applicationWillResignActiveApp: application];
-        }
-        - (void)applicationDidEnterBackground:(UIApplication *)application {
-            [[GameMainNewAppDelegate getNewAppDelegate] applicationDidEnterBackgroundApp: application];
-        }
-        - (void)applicationWillEnterForeground:(UIApplication *)application {
-            [[GameMainNewAppDelegate getNewAppDelegate] applicationWillEnterForegroundApp: application];
-        }
-        - (void)applicationDidBecomeActive:(UIApplication *)application {
-            [[GameMainNewAppDelegate getNewAppDelegate] applicationDidBecomeActiveApp: application];
+        - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options {
+            UISceneConfiguration *config = [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
+            config.delegateClass = [SceneDelegate class];
+            return config;
         }
         - (void)applicationWillTerminate:(UIApplication *)application {
             [[GameMainNewAppDelegate getNewAppDelegate] applicationWillTerminateApp: application];
+        }
+        @end
+
+        @implementation SceneDelegate
+        - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions {
+            if (![scene isKindOfClass:[UIWindowScene class]]) return;
+            GameMainNewAppDelegate *korge = [GameMainNewAppDelegate getNewAppDelegate];
+            // The scene can be disconnected and connected again: start KorGE only once and reuse its window
+            static BOOL korgeStarted = NO;
+            if (!korgeStarted) {
+                korgeStarted = YES;
+                [korge applicationDidFinishLaunchingApp: [UIApplication sharedApplication]];
+            }
+            self.window = korge.window;
+            self.window.windowScene = (UIWindowScene *)scene;
+            self.window.frame = ((UIWindowScene *)scene).coordinateSpace.bounds;
+            [self.window makeKeyAndVisible];
+        }
+        - (void)sceneDidDisconnect:(UIScene *)scene {
+            // Keep KorGE running: the window is attached again if the scene reconnects
+            self.window = nil;
+        }
+        - (void)sceneWillResignActive:(UIScene *)scene {
+            [[GameMainNewAppDelegate getNewAppDelegate] applicationWillResignActiveApp: [UIApplication sharedApplication]];
+        }
+        - (void)sceneDidEnterBackground:(UIScene *)scene {
+            [[GameMainNewAppDelegate getNewAppDelegate] applicationDidEnterBackgroundApp: [UIApplication sharedApplication]];
+        }
+        - (void)sceneWillEnterForeground:(UIScene *)scene {
+            [[GameMainNewAppDelegate getNewAppDelegate] applicationWillEnterForegroundApp: [UIApplication sharedApplication]];
+        }
+        - (void)sceneDidBecomeActive:(UIScene *)scene {
+            [[GameMainNewAppDelegate getNewAppDelegate] applicationDidBecomeActiveApp: [UIApplication sharedApplication]];
         }
         @end
     """.trimIndent()
@@ -121,6 +149,14 @@ object IosProjectTools {
                 line("<true/>")
                 line("<key>UILaunchStoryboardName</key>")
                 line("<string>LaunchScreen</string>")
+                // iOS 27 SDK: apps must adopt the UIScene lifecycle or UIKit traps at launch
+                line("<key>UIApplicationSceneManifest</key>")
+                line("<dict>")
+                indent {
+                    line("<key>UIApplicationSupportsMultipleScenes</key>")
+                    line("<false/>")
+                }
+                line("</dict>")
                 //line("<key>UIMainStoryboardFile</key>")
                 //line("<string>Main</string>")
                 line("<key>UIRequiredDeviceCapabilities</key>")
