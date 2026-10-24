@@ -17,6 +17,7 @@ import korlibs.korge.gradle.targets.native.getLinkTask
 import korlibs.korge.gradle.util.createThis
 import korlibs.korge.gradle.util.createTyped
 import korlibs.korge.gradle.util.execLogger
+import korlibs.korge.gradle.util.execOutput
 import korlibs.korge.gradle.util.get
 import korlibs.korge.gradle.util.projectExtension
 import org.gradle.api.Project
@@ -152,7 +153,17 @@ fun Project.configureNativeIosRun() {
                 }
             }
             execLogger { it.commandLine("xcrun", "simctl", "boot", udid) }
-            execLogger { it.commandLine("sh", "-c", "open `xcode-select -p`/Applications/Simulator.app/ --args -CurrentDeviceUDID $udid") }
+            // Showing the window is optional: the device is booted, so installing and launching work without it
+            val developerDir = File(execOutput("xcode-select", "-p").trim())
+            val openCommand = IosSimulatorApp.openCommand(developerDir, udid)
+            val opened = openCommand != null && execLogger {
+                it.commandLine(openCommand)
+                it.isIgnoreExitValue = true
+            }.exitValue == 0
+            if (!opened) {
+                val reason = if (openCommand == null) "found no Simulator.app or DeviceHub.app in the Xcode at $developerDir" else "`${openCommand.joinToString(" ")}` failed"
+                logger.warn("Couldn't open a simulator window for $udid: $reason. The device is booted, so the build continues without a window.")
+            }
         }
     }
 
