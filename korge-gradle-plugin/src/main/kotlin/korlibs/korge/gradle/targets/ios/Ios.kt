@@ -223,23 +223,34 @@ fun Project.configureNativeIosRun() {
             }
         }
 
+        // devicectl ships with Xcode 15+; ios-deploy can't be built with Xcode 27 and doesn't support iOS 17+ well
         val installIosDevice = tasks.createThis<Task>("installIosDevice$debugSuffix") {
             group = GROUP_KORGE_INSTALL
             val buildTaskName = "iosBuildDevice$debugSuffix"
-            dependsOn(installIosDeploy, buildTaskName)
+            dependsOn(buildTaskName)
             doLast {
                 val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-                iosDeployExt.install(appFolder.absolutePath)
+                val device = iosSdkExt.appleGetPhysicalDevice()
+                logger.lifecycle("Installing on ${device.name} (${device.udid}, ${device.transportType})")
+                val result = execLogger {
+                    it.commandLine("xcrun", "devicectl", "device", "install", "app", "--device", device.udid, appFolder.absolutePath)
+                    it.isIgnoreExitValue = true
+                }
+                // devicectl can still list a phone as reachable for a few seconds after it disconnects
+                if (result.exitValue != 0) {
+                    error("Couldn't install on ${device.name} over ${device.transportType} (devicectl error above). Check that it's connected and unlocked, then retry.")
+                }
             }
         }
 
         val runIosDevice = tasks.createTyped<Exec>("runIosDevice$debugSuffix") {
             group = GROUP_KORGE_RUN
-            val buildTaskName = "iosBuildDevice$debugSuffix"
-            dependsOn(installIosDeploy, buildTaskName)
+            dependsOn(installIosDevice)
             doFirst {
-                val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-                iosDeployExt.installAndRun(appFolder.absolutePath)
+                val device = iosSdkExt.appleGetPhysicalDevice()
+                // --console streams the app's stdout and keeps running until the app exits
+                commandLine("xcrun", "devicectl", "device", "process", "launch", "--console", "--terminate-existing", "--device", device.udid, "${korge.id}.app-Arm64-$debugSuffix")
+                println("COMMAND: ${commandLine.joinToString(" ")}")
             }
         }
 

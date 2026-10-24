@@ -1,0 +1,82 @@
+{
+  "result": {
+    "devices": [
+      {
+        "connectionProperties": {
+          "pairingState": "paired",
+          "transportType": "wired",
+          "tunnelState": "connected"
+        },
+        "deviceProperties": {
+          "name": "Test iPhone",
+          "osVersionNumber": "26.6.2",
+          "developerModeStatus": "enabled"
+        },
+        "hardwareProperties": {
+          "deviceType": "iPhone",
+          "marketingName": "iPhone 17 Pro",
+          "platform": "iOS",
+          "reality": "physical",
+          "udid": "00008150-000000000000001C"
+        }
+      },
+      {
+        "connectionProperties": {
+          "pairingState": "paired",
+          "transportType": "sameMachine",
+          "tunnelState": "disconnected"
+        },
+        "deviceProperties": {
+          "name": "iPhone 17",
+          "osVersionNumber": "27.0",
+          "developerModeStatus": null
+        },
+        "hardwareProperties": {
+          "deviceType": "iPhone",
+          "marketingName": "iPhone 17",
+          "platform": "iOS",
+          "reality": "simulated",
+          "udid": "516EAFD1-B0E2-48FF-80E6-71CB68F5813A"
+        }
+      },
+      {
+        "connectionProperties": {
+          "pairingState": "paired",
+          "transportType": "sameMachine",
+          "tunnelState": "disconnected"
+        },
+        "deviceProperties": {
+          "name": "iPhone 18 Pro",
+          "osVersionNumber": "27.0",
+          "developerModeStatus": null
+        },
+        "hardwareProperties": {
+          "deviceType": "iPhone",
+          "marketingName": "iPhone 18 Pro",
+          "platform": "iOS",
+          "reality": "simulated",
+          "udid": "0BAA7FE5-98A7-40A0-B56C-FA6FB93961D0"
+        }
+      },
+      {
+        "connectionProperties": {
+          "pairingState": "paired",
+          "transportType": "sameMachine",
+          "tunnelState": "disconnected"
+        },
+        "deviceProperties": {
+          "name": "iPhone Duo",
+          "osVersionNumber": "27.1",
+          "developerModeStatus": null
+        },
+        "hardwareProperties": {
+          "deviceType": "iPhone",
+          "marketingName": "iPhone Duo",
+          "platform": "iOS",
+          "reality": "simulated",
+          "udid": "E1C0EB0B-02A1-46B2-B640-CAAAB1290D2B"
+        }
+      }
+    ]
+  }
+}

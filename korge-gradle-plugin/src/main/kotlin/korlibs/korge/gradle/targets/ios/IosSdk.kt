@@ -77,4 +77,7 @@ class IosSdk(val project: Project) {
 
     fun appleGetRuntimes(): List<IosSimulators.Runtime> =
         IosSimulators.parseRuntimes(project.execOutput("xcrun", "simctl", "list", "-j", "runtimes"))
+
+    fun appleGetPhysicalDevice(): IosPhysicalDevices.Device =
+        IosPhysicalDevices.select(IosPhysicalDevices.parse(project.execOutput("xcrun", "devicectl", "list", "devices", "--json-output", "-")))
 }
