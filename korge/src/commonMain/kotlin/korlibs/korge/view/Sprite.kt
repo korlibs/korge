@@ -284,7 +284,7 @@ open class Sprite(
 
     private fun nextSprite(frameTime: FastDuration) {
         lastAnimationFrameTime += frameTime
-        if (lastAnimationFrameTime + frameTime >= this.fastSpriteDisplayTime) {
+        if (lastAnimationFrameTime >= this.fastSpriteDisplayTime) {
             when (animationType) {
                 AnimationType.STANDARD -> {
                     if (animationNumberOfFramesRequested > 0) {
@@ -293,7 +293,7 @@ open class Sprite(
                 }
 
                 AnimationType.DURATION -> {
-                    animationRemainingDuration -= lastAnimationFrameTime
+                    animationRemainingDuration -= this.fastSpriteDisplayTime
                 }
 
                 AnimationType.LOOPED -> {
@@ -302,7 +302,7 @@ open class Sprite(
             if (reversed) --currentSpriteIndex else ++currentSpriteIndex
             totalFramesPlayed++
             triggerEvent(_onFrameChanged)
-            lastAnimationFrameTime = 0.fastSeconds
+            lastAnimationFrameTime -= this.fastSpriteDisplayTime
         }
     }
 
