@@ -62,4 +62,30 @@ dependencies {
 // Ensure the vanniktech maven-publish extension creates the Maven Central publish tasks
 mavenPublishing {
     publishToMavenCentral()
+
+    coordinates(group.toString(), "korge-gradle-plugin", version.toString())
+
+    pom {
+        name.set("korge-gradle-plugin")
+        description.set("Korge Gradle Plugin – Multiplatform Game Engine Gradle plugin")
+        url.set("https://github.com/korlibs/korge")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://raw.githubusercontent.com/korlibs/korge/main/LICENSE")
+            }
+        }
+        developers {
+            developer {
+                id.set("korge")
+                name.set("KorGE Team")
+                email.set("info@korge.org")
+            }
+        }
+        scm {
+            connection.set("scm:git:https://github.com/korlibs/korge.git")
+            developerConnection.set("scm:git:git@github.com:korlibs/korge.git")
+            url.set("https://github.com/korlibs/korge")
+        }
+    }
 }

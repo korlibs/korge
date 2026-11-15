@@ -1,4 +1,5 @@
-import com.vanniktech.maven.publish.*
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.JavaLibrary
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -57,6 +58,8 @@ mavenPublishing {
             }
         }
         scm {
+            connection.set("scm:git:https://github.com/korlibs/korge.git")
+            developerConnection.set("scm:git:git@github.com:korlibs/korge.git")
             url.set("https://github.com/korlibs/korge")
         }
     }

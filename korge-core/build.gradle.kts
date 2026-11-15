@@ -1,3 +1,5 @@
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinMultiplatform
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
@@ -9,7 +11,7 @@ plugins {
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
-description = "Multiplatform Game Engine written in Kotlin"
+description = "Multiplatform Game Engine written in Kotlin - Core module"
 group = "org.korge.engine"
 version = rootProject.libs.versions.korge.get()
 
@@ -89,5 +91,32 @@ kotlin {
 
 // Ensure the vanniktech maven-publish extension creates the Maven Central publish tasks
 mavenPublishing {
+    configure(KotlinMultiplatform(javadocJar = JavadocJar.Empty()))
     publishToMavenCentral()
+
+    coordinates(group.toString(), "korge-core", version.toString())
+
+    pom {
+        name.set("korge-core")
+        description.set("Multiplatform Game Engine written in Kotlin - Core module")
+        url.set("https://github.com/korlibs/korge")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://raw.githubusercontent.com/korlibs/korge/main/LICENSE")
+            }
+        }
+        developers {
+            developer {
+                id.set("korge")
+                name.set("KorGE Team")
+                email.set("info@korge.org")
+            }
+        }
+        scm {
+            connection.set("scm:git:https://github.com/korlibs/korge.git")
+            developerConnection.set("scm:git:git@github.com:korlibs/korge.git")
+            url.set("https://github.com/korlibs/korge")
+        }
+    }
 }

@@ -38,6 +38,8 @@ mavenPublishing {
             }
         }
         scm {
+            connection.set("scm:git:https://github.com/korlibs/korge.git")
+            developerConnection.set("scm:git:git@github.com:korlibs/korge.git")
             url.set("https://github.com/korlibs/korge")
         }
     }

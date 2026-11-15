@@ -1,5 +1,20 @@
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinMultiplatform
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+
+// Resolve version: FORCED_VERSION env (from CI) takes precedence over version catalog.
+// FORCED_VERSION can be: "refs/tags/v1.2.3" (tag push), "refs/heads/main" (branch push), or "1.2.3" (manual).
+val resolvedVersion: String = System.getenv("FORCED_VERSION").let { forced ->
+    when {
+        forced.isNullOrBlank() -> libs.versions.korlibs.get()
+        forced.startsWith("refs/tags/v") -> forced.removePrefix("refs/tags/v")
+        forced.startsWith("refs/tags/") -> forced.removePrefix("refs/tags/")
+        forced.startsWith("refs/heads/") -> libs.versions.korlibs.get() // branch push, use catalog
+        else -> forced // direct version string from manual dispatch
+    }
+}
+version = resolvedVersion
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -11,7 +26,6 @@ plugins {
 
 description = "Multiplatform Game Engine written in Kotlin"
 group = "org.korge.engine"
-version = rootProject.libs.versions.korge.get()
 
 kotlin {
     applyDefaultHierarchyTemplate()
@@ -119,5 +133,32 @@ appleTestTargets.forEach { target ->
 
 // Ensure the vanniktech maven-publish extension creates the Maven Central publish tasks
 mavenPublishing {
+    configure(KotlinMultiplatform(javadocJar = JavadocJar.Empty()))
     publishToMavenCentral()
+
+    coordinates(group.toString(), "korge", version.toString())
+
+    pom {
+        name.set("korge")
+        description.set("Multiplatform Game Engine written in Kotlin")
+        url.set("https://github.com/korlibs/korge")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://raw.githubusercontent.com/korlibs/korge/main/LICENSE")
+            }
+        }
+        developers {
+            developer {
+                id.set("korge")
+                name.set("KorGE Team")
+                email.set("info@korge.org")
+            }
+        }
+        scm {
+            connection.set("scm:git:https://github.com/korlibs/korge.git")
+            developerConnection.set("scm:git:git@github.com:korlibs/korge.git")
+            url.set("https://github.com/korlibs/korge")
+        }
+    }
 }
