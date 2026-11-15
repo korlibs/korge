@@ -64,13 +64,13 @@ For more information, visit:
 ```toml
 [plugins]
 #korge = { id = "com.soywiz.korge", version = "6.0.0" }   <-- Old namespace, latest official version
-korge = { id = "org.korge.engine", version = "7.0.0-SNAPSHOT" }   # <-- New namespace, use latest snapshot version
+korge = { id = "org.korge.engine", version = "7.0.0-alpha1" }   # <-- New namespace, use latest snapshot version
 ```
 
 ## Usage:
 
 - The latest official release on Maven Central is `6.0.0`
-- The current snapshot release on Maven Central is `7.0.0-SNAPSHOT`
+- The current snapshot release on Maven Central is `7.0.0-alpha1`
 
 ### Publish to Maven Local
 
