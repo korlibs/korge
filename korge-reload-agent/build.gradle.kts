@@ -37,12 +37,19 @@ java {
 mavenPublishing {
     configure(JavaLibrary(javadocJar = JavadocJar.Empty(), sourcesJar = true))
     publishToMavenCentral()
+    // Only sign when a key is available (e.g. not for publishToMavenLocal on CI)
+    val hasSigningKey = project.providers.gradleProperty("signingInMemoryKey").isPresent ||
+        System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey") != null
+    if (hasSigningKey) {
+        signAllPublications()
+    }
 
     coordinates(group.toString(), "korge-reload-agent", version.toString())
 
     pom {
         name.set("korge-reload-agent")
         description.set("Korge Reload Agent – JVM hot-reload instrumentation agent")
+        inceptionYear.set("2020")
         url.set("https://github.com/korlibs/korge")
         licenses {
             license {

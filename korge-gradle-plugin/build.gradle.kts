@@ -5,9 +5,19 @@ plugins {
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
+val resolvedVersion: String = System.getenv("FORCED_VERSION").let { forced ->
+    when {
+        forced.isNullOrBlank() -> libs.versions.korge.get()
+        forced.startsWith("refs/tags/v") -> forced.removePrefix("refs/tags/v")
+        forced.startsWith("refs/tags/") -> forced.removePrefix("refs/tags/")
+        forced.startsWith("refs/heads/") -> libs.versions.korge.get()
+        else -> forced
+    }
+}
+
 description = "Multiplatform Game Engine written in Kotlin"
 group = "org.korge.gradleplugins"
-version = libs.versions.korge.get()
+version = resolvedVersion
 
 // Pin the published bytecode/metadata to the project's target Java version so the plugin is
 // consumable by builds running that JVM, regardless of which JDK performs the publish.
@@ -62,12 +72,19 @@ dependencies {
 // Ensure the vanniktech maven-publish extension creates the Maven Central publish tasks
 mavenPublishing {
     publishToMavenCentral()
+    // Only sign when a key is available (e.g. not for publishToMavenLocal on CI)
+    val hasSigningKey = project.providers.gradleProperty("signingInMemoryKey").isPresent ||
+        System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey") != null
+    if (hasSigningKey) {
+        signAllPublications()
+    }
 
     coordinates(group.toString(), "korge-gradle-plugin", version.toString())
 
     pom {
         name.set("korge-gradle-plugin")
         description.set("Korge Gradle Plugin – Multiplatform Game Engine Gradle plugin")
+        inceptionYear.set("2020")
         url.set("https://github.com/korlibs/korge")
         licenses {
             license {

@@ -3,19 +3,6 @@ import com.vanniktech.maven.publish.KotlinMultiplatform
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
-// Resolve version: FORCED_VERSION env (from CI) takes precedence over version catalog.
-// FORCED_VERSION can be: "refs/tags/v1.2.3" (tag push), "refs/heads/main" (branch push), or "1.2.3" (manual).
-val resolvedVersion: String = System.getenv("FORCED_VERSION").let { forced ->
-    when {
-        forced.isNullOrBlank() -> libs.versions.korlibs.get()
-        forced.startsWith("refs/tags/v") -> forced.removePrefix("refs/tags/v")
-        forced.startsWith("refs/tags/") -> forced.removePrefix("refs/tags/")
-        forced.startsWith("refs/heads/") -> libs.versions.korlibs.get() // branch push, use catalog
-        else -> forced // direct version string from manual dispatch
-    }
-}
-version = resolvedVersion
-
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.multiplatform.library)
@@ -135,12 +122,19 @@ appleTestTargets.forEach { target ->
 mavenPublishing {
     configure(KotlinMultiplatform(javadocJar = JavadocJar.Empty()))
     publishToMavenCentral()
+    // Only sign when a key is available (e.g. not for publishToMavenLocal on CI)
+    val hasSigningKey = project.providers.gradleProperty("signingInMemoryKey").isPresent ||
+        System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey") != null
+    if (hasSigningKey) {
+        signAllPublications()
+    }
 
     coordinates(group.toString(), "korge", version.toString())
 
     pom {
         name.set("korge")
         description.set("Multiplatform Game Engine written in Kotlin")
+        inceptionYear.set("2020")
         url.set("https://github.com/korlibs/korge")
         licenses {
             license {
