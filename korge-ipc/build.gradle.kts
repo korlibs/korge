@@ -12,17 +12,23 @@ plugins {
 
 description = "Korge IPC – inter-process communication utilities for the Korge game engine"
 group = "org.korge.engine"
-version = rootProject.libs.versions.korge.get()
 
 mavenPublishing {
     configure(JavaLibrary(javadocJar = JavadocJar.Empty(), sourcesJar = true))
     publishToMavenCentral()
+    // Only sign when a key is available (e.g. not for publishToMavenLocal on CI)
+    val hasSigningKey = project.providers.gradleProperty("signingInMemoryKey").isPresent ||
+        System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey") != null
+    if (hasSigningKey) {
+        signAllPublications()
+    }
 
     coordinates(group.toString(), "korge-ipc", version.toString())
 
     pom {
         name.set("korge-ipc")
         description.set("Korge IPC – inter-process communication utilities for the Korge game engine")
+        inceptionYear.set("2020")
         url.set("https://github.com/korlibs/korge")
         licenses {
             license {

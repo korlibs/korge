@@ -13,7 +13,6 @@ plugins {
 
 description = "Multiplatform Game Engine written in Kotlin - Core module"
 group = "org.korge.engine"
-version = rootProject.libs.versions.korge.get()
 
 kotlin {
     applyDefaultHierarchyTemplate()
@@ -93,12 +92,19 @@ kotlin {
 mavenPublishing {
     configure(KotlinMultiplatform(javadocJar = JavadocJar.Empty()))
     publishToMavenCentral()
+    // Only sign when a key is available (e.g. not for publishToMavenLocal on CI)
+    val hasSigningKey = project.providers.gradleProperty("signingInMemoryKey").isPresent ||
+        System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey") != null
+    if (hasSigningKey) {
+        signAllPublications()
+    }
 
     coordinates(group.toString(), "korge-core", version.toString())
 
     pom {
         name.set("korge-core")
         description.set("Multiplatform Game Engine written in Kotlin - Core module")
+        inceptionYear.set("2020")
         url.set("https://github.com/korlibs/korge")
         licenses {
             license {
