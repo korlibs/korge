@@ -69,8 +69,9 @@ korge = { id = "org.korge.engine", version = "7.0.0-alpha1" }   # <-- New namesp
 
 ## Usage:
 
-- The latest official release on Maven Central is `6.0.0`
-- The current snapshot release on Maven Central is `7.0.0-alpha1`
+- The latest official release on Maven Central is `6.0.0`.
+- The latest testing pre-release is `7.0.0-alpha1`.
+- The current development snapshot release on Maven Central is `7.0.0-SNAPSHOT`.
 
 ### Publish to Maven Local
 
