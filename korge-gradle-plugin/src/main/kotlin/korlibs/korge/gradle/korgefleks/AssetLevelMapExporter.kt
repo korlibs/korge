@@ -197,11 +197,11 @@ class AssetLevelMapExporter(
         var collisionTileSetFileName = ""
         enums.firstOrNull { map -> (map["identifier"] as? String) == "collisionConfig" }?.let { collisionEnum ->
             val enumValues = collisionEnum["values"] as? List<Map<String, Any?>> ?: error("Collision config enum does not contain 'values' definition!")
-            //println("Collision config enum values:")
+
             // Add first collision ID for empty collision (no collision) with empty shape definition, so that the collision ID 0 can be used
             // for tiles without collision, and it is guaranteed that it does not overlap with any real collision shape definition from the enum values
             nameToCollisionId["empty"] = 0
-            idToCollisionShape.add(listOf(-1))
+            idToCollisionShape.add(listOf(-1))  // -1 indicates no collision shape
 
             var i = 1
             enumValues.forEach { enumValue ->
@@ -221,7 +221,7 @@ class AssetLevelMapExporter(
                     val cy = collisionRect["y"] as? Int ?: error("Collision config enum value 'tileRect' does not contain 'y' definition!")
 
                     nameToCollisionId[collisionName] = i
-                    idToCollisionShape.add(listOf(cx, cy))
+                    idToCollisionShape.add(listOf(cx, cy))  // Save offset to top left corner of collision shape in pixels
                     i++
                 }
             }
@@ -559,8 +559,23 @@ class AssetLevelMapExporter(
             // 16 bits 4-19: tile id (65536 tiles per cluster = 4096 tiles per tileset with 16 tilesets per cluster)
             //  8 bits 20-27: collision info (256 collision types overall)
             //  4 bits 28-31: reserved for future use (e.g. flipX, flipY, animation frame, etc.)
-            val tileIdx = (clusterIndex and 0xf) or ((tileId and 0xffff) shl 4) or ((collision and 0xff) shl 20)
-            stackedTileMapData[tileIndex].add(tileIdx)
+
+            // Save collision information into first tile entry of each stacked tile list
+            // Reasion is to keep probing for collision info in Korge-fleks WorldMapData simple
+            // The top most tile with collision info will be used for collision detection
+
+            // Check if there is already a tile at the given index and save collision info into first tile entry of each stacked tile list
+            if (collision != 0 && stackedTileMapData[tileIndex].isNotEmpty()) {
+                // Save collision info into first tile entry and clear any collision info which was written before
+                stackedTileMapData[tileIndex][0] = stackedTileMapData[tileIndex][0] and 0xfffff  // clear collision info bits
+                stackedTileMapData[tileIndex][0] = stackedTileMapData[tileIndex][0] or ((collision and 0xff) shl 20)  // set collision info bits
+                // Save tile id
+                val tileIdx = (clusterIndex and 0xf) or ((tileId and 0xffff) shl 4)
+                stackedTileMapData[tileIndex].add(tileIdx)
+            } else {
+                val tileIdx = (clusterIndex and 0xf) or ((tileId and 0xffff) shl 4) or ((collision and 0xff) shl 20)
+                stackedTileMapData[tileIndex].add(tileIdx)
+            }
             stackedTileMapPopulated = true
         }
     }
